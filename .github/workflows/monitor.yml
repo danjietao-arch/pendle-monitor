@@ -44,5 +44,16 @@ jobs:
           git config user.name  "monitor-bot"
           git config user.email "bot@users.noreply.github.com"
           git add state.json
-          git commit -m "update state [skip ci]" || echo "no state changes"
-          git push
+          if git diff --cached --quiet; then
+            echo "no state changes"
+            exit 0
+          fi
+          git commit -m "update state [skip ci]"
+          # 远程可能有更新(并发/重跑), rebase 后再推, 失败不判定任务失败(断点下轮可补)
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep 5
+          done
+          echo "state push failed (will rescan next run, alerts may duplicate)"
+          exit 0
