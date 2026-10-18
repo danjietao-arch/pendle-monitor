@@ -1,0 +1,384 @@
+{
+  "chains": [
+    {
+      "name": "Ethereum",
+      "chain_id": 1,
+      "explorer": "https://etherscan.io"
+    },
+    {
+      "name": "Monad",
+      "chain_id": 143,
+      "explorer": "https://monadscan.com"
+    },
+    {
+      "name": "Arbitrum",
+      "chain_id": 42161,
+      "explorer": "https://arbiscan.io"
+    }
+  ],
+  "pendle_routers": [
+    "0x888888888889758f76e7103c6cbf23abbf58f946",
+    "0x00000000005bbb0ef59571e58418f9a4357b68a0"
+  ],
+  "pendle_token_prefixes": [
+    "PT-",
+    "YT-",
+    "SY-",
+    "PENDLE-LPT"
+  ],
+  "enable_router_check": false,
+  "tier1_interval_min": 10,
+  "tier2_interval_min": 30,
+  "api_sleep_sec": 0.25,
+  "recent_txs_cap": 50,
+  "max_pages": 3,
+  "daily_call_budget": 90000,
+  "wallets": [
+    {
+      "address": "0xd45df39be622aadbe6c90b40b44732e1166b00b1",
+      "label": "aGETH-1",
+      "priority": false
+    },
+    {
+      "address": "0x943c23be6316736b6d029210ecea2e2b0df2ef3e",
+      "label": "aGETH-2",
+      "priority": false
+    },
+    {
+      "address": "0xdeb13d71998ed256554114cf3c6c150a74c60b2f",
+      "label": "AIDaUSDC-3",
+      "priority": false
+    },
+    {
+      "address": "0xa98eae419a4e15d90387aa8478d9fd92e6e36127",
+      "label": "aUSDC-2.",
+      "priority": false
+    },
+    {
+      "address": "0x596cdbb0d4b74cb5dcdf86613d8012e0cd3e522f",
+      "label": "aUSDC-4.",
+      "priority": false
+    },
+    {
+      "address": "0x78799cf5b17b3b3f46faaa3e0ad706180ef020d0",
+      "label": "BTC-6✪",
+      "priority": true
+    },
+    {
+      "address": "0x70144e5b5bbf464cff98d689254dc7c7223e01ab",
+      "label": "crv-1",
+      "priority": false
+    },
+    {
+      "address": "0x8e99d4ecb0690b81c7eb818e1903023620d46aff",
+      "label": "crv-11",
+      "priority": false
+    },
+    {
+      "address": "0x39260b9be6b55b18505c6dd098d7fe0bb8622101",
+      "label": "dito",
+      "priority": false
+    },
+    {
+      "address": "0xb957dccaa1ccfb1eb78b495b499801d591d8a403",
+      "label": "dustislife",
+      "priority": false
+    },
+    {
+      "address": "0x0808a2b6962ef20936431178743e47277016104d",
+      "label": "ENA-3",
+      "priority": false
+    },
+    {
+      "address": "0x59ab8c4ae817afb4917913d506b37d5bb9ed3a12",
+      "label": "ENA胜率：85.7%✪",
+      "priority": true
+    },
+    {
+      "address": "0x401e4211414d8286212d9c0bc77f5f54b15972c7",
+      "label": "ENA胜率：87.5%✪",
+      "priority": true
+    },
+    {
+      "address": "0x9503feed46727aa94ad267001296e6b6af8d3f37",
+      "label": "ethena波段",
+      "priority": false
+    },
+    {
+      "address": "0xa14ad7f4c766bd5ca9b79a4a81873b8bcdf57c86",
+      "label": "ETH特长2号",
+      "priority": false
+    },
+    {
+      "address": "0x1cbc3125b7763c548b1af9b0fc3b13064745b1f6",
+      "label": "FALCON-14",
+      "priority": false
+    },
+    {
+      "address": "0x78262c9680ff0b15484d78c413aa209620320848",
+      "label": "fGHO胜率：85.7%　✪",
+      "priority": true
+    },
+    {
+      "address": "0xbe6698cdc1e9f65d8c5149f3adb2603b0385ffcb",
+      "label": "fxsave-3",
+      "priority": false
+    },
+    {
+      "address": "0x5c9d09716404556646b0b4567cb4621c18581f94",
+      "label": "gusdc-3",
+      "priority": false
+    },
+    {
+      "address": "0x12f98b368fee279f749d3a80fd4b16276e8113d5",
+      "label": "HLP-RANK-18",
+      "priority": false
+    },
+    {
+      "address": "0xcd27430eed1ea5e2b8a3ef95d90c14d2b21552a8",
+      "label": "HLP-RANK-29",
+      "priority": false
+    },
+    {
+      "address": "0x010b23b2f2a5f6bc4ce0c68a5f65c248c1129831",
+      "label": "HLP-RANK-2✪",
+      "priority": true
+    },
+    {
+      "address": "0xd18c96b6cd70987189b95e02b27d98e681bba100",
+      "label": "HLP-RANK-33",
+      "priority": false
+    },
+    {
+      "address": "0x7c0554c66d27f4b8f92570d7055895c522d96100",
+      "label": "HLP-RANK-34",
+      "priority": false
+    },
+    {
+      "address": "0x7e151351180ae4d443280e59d8ec4f0b88a097da",
+      "label": "HLP-RANK-36",
+      "priority": false
+    },
+    {
+      "address": "0x3efd5cdb46c700481f40058341aa220ac2552660",
+      "label": "HLP-RANK-41",
+      "priority": false
+    },
+    {
+      "address": "0x04cc5be7baef93144c6a1f06846d26f808b44ab5",
+      "label": "HLP-RANK-43",
+      "priority": false
+    },
+    {
+      "address": "0x39a329cdd8ac9d61155c6f15b36c7f95d3ea98c1",
+      "label": "HLP-RANK-44",
+      "priority": false
+    },
+    {
+      "address": "0x48aa9d67cb713804c005516bca7769c159d7897c",
+      "label": "hlp金库-7897",
+      "priority": false
+    },
+    {
+      "address": "0x8b3c0efc768acfafe55345407fab2f11c0e38326",
+      "label": "hype选手",
+      "priority": false
+    },
+    {
+      "address": "0x338fe1a22b55ca5f10b6f391310d47c9bee06a2b",
+      "label": "J哥✪",
+      "priority": true
+    },
+    {
+      "address": "0xec2868560e07c960b0f2b190c866caf93b1120f5",
+      "label": "Khype-12",
+      "priority": false
+    },
+    {
+      "address": "0xcb9ef2a95b520a27d6e193c7b58502a21c01da1f",
+      "label": "midas+khyper+hlp✪",
+      "priority": true
+    },
+    {
+      "address": "0xce120dfaade4883b04ea80fbd4fa0eec4d3351dc",
+      "label": "midas8",
+      "priority": false
+    },
+    {
+      "address": "0x7b2dcadceac7b472409eceeca489fee8b5db2de4",
+      "label": "mida备选",
+      "priority": false
+    },
+    {
+      "address": "0x2d0beb550118319afa2dde4aa042a35be7aa2e94",
+      "label": "pendle-TOP17",
+      "priority": false
+    },
+    {
+      "address": "0xdb611d682cb1ad72fcbacd944a8a6e2606a6d158",
+      "label": "pendle-TOP20",
+      "priority": false
+    },
+    {
+      "address": "0xc493bd1d8d794357e79da84613b67533afc4d337",
+      "label": "pendle-TOP36",
+      "priority": false
+    },
+    {
+      "address": "0x1c6c6eb5942f99400da8e8b3a7540038f02c81ec",
+      "label": "pendle-TOP46",
+      "priority": false
+    },
+    {
+      "address": "0x4c9f7207be28278b9dca129f2e211acfff48fb01",
+      "label": "pendle-TOP6✪",
+      "priority": true
+    },
+    {
+      "address": "0x20eadfcaf91bd98674ff8fc341d148e1731576a4",
+      "label": "pendle系-88.9%胜率✪",
+      "priority": true
+    },
+    {
+      "address": "0xe7057096f17351ea42b8f7f4af77d94aa5a45664",
+      "label": "pendle系100%✪",
+      "priority": true
+    },
+    {
+      "address": "0x46a83dc1a264bff133db887023d2884167094837",
+      "label": "resolve-1",
+      "priority": false
+    },
+    {
+      "address": "0x5c0642fe68fc72cf03f676b28faf5cf97cc0b265",
+      "label": "resolve-2",
+      "priority": false
+    },
+    {
+      "address": "0x344d9c4f488bb5519d390304457d64034618145c",
+      "label": "splUSD✪",
+      "priority": true
+    },
+    {
+      "address": "0x1b61d87830f138090eb759b417cdede32fd63002",
+      "label": "srUSDE-5-临时",
+      "priority": false
+    },
+    {
+      "address": "0xda3d20278ec5d01a420c0ba9a5a7a0a963099660",
+      "label": "sUSDE-25SEP2025-金额-1✪",
+      "priority": true
+    },
+    {
+      "address": "0x4aa29d0aec8c80cad432cc2e272ab2351b72b745",
+      "label": "sUSDE-29MAY2025-pnl-3✪",
+      "priority": true
+    },
+    {
+      "address": "0xb0e83c2d71a991017e0116d58c5765abc57384af",
+      "label": "swETH+CRV",
+      "priority": false
+    },
+    {
+      "address": "0x10c0014602516a154f8883ae4cbf09322d84cb81",
+      "label": "SYUSD",
+      "priority": false
+    },
+    {
+      "address": "0xa03dae29ae8326f23261b5e9375ff6aee5f4336d",
+      "label": "TUSDE-1-波段",
+      "priority": false
+    },
+    {
+      "address": "0x9db0ee5bac43ea008312295a95c2e287ecff8c8d",
+      "label": "upusdc-来自cad3推荐",
+      "priority": false
+    },
+    {
+      "address": "0xd0c732fa94b2af44e4bfb3f01889774b8f395d53",
+      "label": "USDAI-2",
+      "priority": false
+    },
+    {
+      "address": "0xf23d552a1ed74f0d4485c989ee649e35c5d37400",
+      "label": "usdai-hyper-susde✪",
+      "priority": true
+    },
+    {
+      "address": "0xf991acd672d5b344afcb29931af6401ed32e2691",
+      "label": "usde-3号",
+      "priority": false
+    },
+    {
+      "address": "0x3af4a49c8e2fcaf33fd3389543b80d320fcc9091",
+      "label": "usde-4号",
+      "priority": false
+    },
+    {
+      "address": "0xee2826453a4fd5afeb7ceffeef3ffa2320081268",
+      "label": "usde-6号",
+      "priority": false
+    },
+    {
+      "address": "0x579111593dd389e7c239525076e8fd5849038ea1",
+      "label": "usde-7号",
+      "priority": false
+    },
+    {
+      "address": "0x9844c3688daaa98de18fbe52499a6b152236896b",
+      "label": "usde-8号",
+      "priority": false
+    },
+    {
+      "address": "0xcd22a3962a067472b335cf2564365c3034bc975b",
+      "label": "usual+稳定币",
+      "priority": false
+    },
+    {
+      "address": "0xc693b4ffb338579467a541b2bf267b1955870920",
+      "label": "V佬-spark-21 T1✪",
+      "priority": true
+    },
+    {
+      "address": "0xf104f4af9faaeed15a7cd654dcfa82076044bd68",
+      "label": "weETH-1号",
+      "priority": false
+    },
+    {
+      "address": "0x731bfadaf268f6a388558fad07cfcc5ec9e9323f",
+      "label": "weETH-2号✪",
+      "priority": true
+    },
+    {
+      "address": "0x31304ccdd28e62ef552824db08a350d752068c39",
+      "label": "weETH-5号",
+      "priority": false
+    },
+    {
+      "address": "0x743d7b30661d65b41960bf6b5d1bb93cf7972a73",
+      "label": "x33-hype-2-pnl-8✪",
+      "priority": true
+    },
+    {
+      "address": "0x75c937cf64bd4ea62b6be6c0c104c557d14786d7",
+      "label": "YT-1号90%胜率✪",
+      "priority": true
+    },
+    {
+      "address": "0x663dbe05f86c03c394b56dc7a22bd11ef0129bc4",
+      "label": "柠檬",
+      "priority": false
+    },
+    {
+      "address": "0x5d47e5d242a8f66a6286b0a2353868875f5d6068",
+      "label": "金库+splusd+sonic",
+      "priority": false
+    },
+    {
+      "address": "0x9b6dd3feb17f71b7c69a234c6f5449c386586989",
+      "label": "***J哥***strcx",
+      "priority": false
+    }
+  ],
+  "min_tx_usd": 100
+}

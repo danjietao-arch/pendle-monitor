@@ -1,0 +1,25 @@
+# ===== 密钥与敏感文件（绝不入库）=====
+.env
+*.env
+
+# ===== 运行时产物 =====
+monitor.log
+*.json.tmp
+state.json.tmp
+__pycache__/
+
+# ===== 备份与本地数据 =====
+*.bak
+config.backup-*.json
+state.backup-*.json
+filter_cache.json
+filter_report.json
+
+# ===== 本地专用文件 =====
+监控地址 (2).csv
+*.bat
+
+# ===== 编辑器/工具 =====
+.zcode/
+.vscode/
+.idea/

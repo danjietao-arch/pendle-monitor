@@ -1,0 +1,48 @@
+# 可选部署方式：GitHub Actions 定时单次执行 + 状态回传
+# 说明：约 210 次 API/轮（69 钱包 × 3 链），单轮 2-3 分钟，每 15 分钟一轮。
+# 状态持久化：每轮结束自动 commit state.json（断点续扫，掉单不漏单只延迟；
+# 持续提交也顺带规避 GitHub "60天无活动自动禁用定时任务" 规则）。
+# 使用：仓库需配置 Secrets: ETHERSCAN_API_KEY / TG_BOT_TOKEN / TG_CHAT_ID
+name: pendle-monitor
+
+on:
+  schedule:
+    - cron: "3,18,33,48 * * * *" # 每 15 分钟（避开整点高峰，降低调度延迟；UTC 时区）
+  workflow_dispatch: # 支持手动触发
+
+concurrency:
+  group: pendle-monitor
+  cancel-in-progress: false
+
+permissions:
+  contents: write # 需要回写 state.json
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run monitor (once)
+        env:
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          RUN_MODE: once
+        run: python monitor.py
+
+      - name: Commit state.json
+        run: |
+          git config user.name  "monitor-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add state.json
+          git commit -m "update state [skip ci]" || echo "no state changes"
+          git push
