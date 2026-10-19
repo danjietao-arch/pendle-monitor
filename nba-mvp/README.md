@@ -35,7 +35,7 @@ PYTHONPATH=src python3 -m nba_mvp selftest
 
 ## Stage 2：历史赛季与两条基线
 
-可拉取的有标签赛季是 2015—16 到 2024—25。`data.nba.com` 对 2014 及更早的赛程返回 HTTP 403，那些赛季没有入库，也没有补造比赛或选票。2019—20 的官方结果 PDF 是扫描件，总分来自选票 PDF 的 10/7/5/3/1，不做 OCR。缩短赛季保持实际场次，不补到 1230 场。
+可拉取的有标签赛季是 2015—16 到 2025—26。`data.nba.com` 对 2014 及更早的赛程返回 HTTP 403，那些赛季没有入库，也没有补造比赛或选票。2019—20 的官方结果 PDF 是扫描件，总分来自选票 PDF 的 10/7/5/3/1，不做 OCR。缩短赛季保持实际场次，不补到 1230 场。2025—26 官方赛程就是 1200 场。
 
 基线 A 只用赛前可知的上场均、上场次和上季球队胜率。基线 B 是 L2 逻辑回归（`C=0.1`，`random_state=0`），按快照键只用更早赛季的同一快照拟合，再在该快照内 softmax。Walk-forward 比较 log loss 和 Brier；Top-1 / Top-3 是辅助指标。可靠性图是 `data/reports/stage2_reliability.svg`。
 
@@ -45,7 +45,7 @@ PYTHONPATH=src python3 -m nba_mvp stage2-backtest
 PYTHONPATH=src python3 -m nba_mvp selftest
 ```
 
-`stage2-backtest` 只读存档，不访问网络，也不对 2026—27 调用 `infer`。有标签赛季少于 10 个时，状态保持「待训练」。这次存档里 10 个赛季都有官方选票，门禁达到后会写出训练产物，但本命令仍不推断 2026—27。赔率和 Polymarket 不进入这条回测。
+`stage2-backtest` 只读存档，不访问网络，也不对 2026—27 调用 `infer`。有标签赛季少于 10 个时，状态保持「待训练」。这次存档里 2015—16 到 2025—26 都有官方选票，门禁达到后会写出训练产物，但本命令仍不推断 2026—27。赔率和 Polymarket 不进入这条回测。
 
 2016—17 不进入 A/B 的配对均值：2015—16 没有更早赛季，赛前特征全空，基线 A 无法拟合。从 2017—18 起的配对折上，基线 B 的平均 log loss 和 Brier 都不高于基线 A。`tg_10` 和 `tg_40` 的 Brier 略高，写在报告的 `snapshot_shortfalls` 里，没有为了抹平这个差距去调 `C`。Top-1 / Top-3 只作辅助。可靠性图的正样本就是这些留出快照，样本很小。
 
@@ -80,6 +80,25 @@ PYTHONPATH=src python3 -m nba_mvp stage4-simulate --demo-season 2024-25 --draws 
 ```
 
 打开 `data/reports/stage4_board.html`。真实预测和假设情景分属两个区块；「再缺席 10 场」只出现在假设情景里。数值以 `data/reports/stage4_monte_carlo.json` 和 `data/reports/stage4_probabilities.csv` 为准。`--probe-live` 会再请求一次 2026—27 赛程和伤病页，失败时写在看板上，不编造比赛。
+
+## 2025—26 赛季看板
+
+2025—26 常规赛已结束（2025-10-21 至 2026-04-12）。官方赛程是 1200 场，不是 1230 场；赛程文件里的 `stt` 是开球时间、比分为空，球队比分只从箱分的 Final 写入。`0022500259`、`0022500260`、`0022500261`（都是 2025-11-19）的箱分页被重定向到 `/games`，没有球员行，赛程里也没有比分可保留。官方 MVP 选票 PDF 已入库，获奖者是 Shai Gilgeous-Alexander。结果图是图片型 PDF，没有 OCR。
+
+```bash
+PYTHONPATH=src python3 -m nba_mvp stage1-fetch --season 2025-26 --workers 10
+PYTHONPATH=src python3 -m nba_mvp stage1-replay --season 2025-26
+PYTHONPATH=src python3 -m nba_mvp stage4-board --season 2025-26 --draws 40 --seed 0
+```
+
+`stage4-board` 用更早赛季拟合基线 B，默认取 `end` 快照，不改写 `stage4_board.html`，也不把蒙特卡洛升格为真实预测。同一份自包含 HTML 在：
+
+- `data/reports/stage4_board_2025-26.html`
+- `data/reports/boards/2025-26.html`
+
+数值以 `data/reports/boards/2025-26.json` 和 `data/reports/boards/2025-26.csv` 为准。用 htmlpreview 打开时把仓库文件的 raw 地址接在 `https://htmlpreview.github.io/?` 后面。合并到 `main` 之后的地址是：
+
+`https://htmlpreview.github.io/?https://raw.githubusercontent.com/danjietao-arch/pendle-monitor/main/nba-mvp/data/reports/boards/2025-26.html`
 
 ## 市场
 

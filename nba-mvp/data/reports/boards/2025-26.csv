@@ -1,0 +1,27 @@
+season,as_of,player_id,player_name,team_abbr,p_baseline,p_monte_carlo,p_scenario_miss10,p_eligibility,p_games_threshold,games_needed,record_band,model_version,primary
+2025-26,2026-04-12,203999,Nikola Jokić,DEN,0.4024769339771051,0.425,,,0.0,3,,baseline_b,baseline_b
+2025-26,2026-04-12,1629029,Luka Dončić,LAL,0.24660938210420466,0.175,,,0.0,3,52–52,baseline_b,baseline_b
+2025-26,2026-04-12,1628983,Shai Gilgeous-Alexander,OKC,0.08099639980774224,0.125,,1.0,1.0,0,,baseline_b,baseline_b
+2025-26,2026-04-12,1627759,Jaylen Brown,BOS,0.07029520527067198,0.1,,1.0,1.0,0,56–56,baseline_b,baseline_b
+2025-26,2026-04-12,1628378,Donovan Mitchell,CLE,0.029717421136346244,0.025,,1.0,1.0,0,51–51,baseline_b,baseline_b
+2025-26,2026-04-12,1630162,Anthony Edwards,MIN,0.025763320541610887,0.05,,,0.0,5,,baseline_b,baseline_b
+2025-26,2026-04-12,1630166,Deni Avdija,POR,0.02144327629474463,0.0,,,0.0,1,41–41,baseline_b,baseline_b
+2025-26,2026-04-12,1627750,Jamal Murray,DEN,0.018239510087488767,0.05,,1.0,1.0,0,,baseline_b,baseline_b
+2025-26,2026-04-12,201142,Kevin Durant,HOU,0.01356825546374598,0.025,,1.0,1.0,0,51–51,baseline_b,baseline_b
+2025-26,2026-04-12,201935,James Harden,CLE,0.012868318128037385,0.0,,1.0,1.0,0,51–51,baseline_b,baseline_b
+2025-26,2026-04-12,1630178,Tyrese Maxey,PHI,0.011359183367987021,0.0,,1.0,1.0,0,44–44,baseline_b,baseline_b
+2025-26,2026-04-12,1641705,Victor Wembanyama,SAS,0.010957067074594524,0.0,,,0.0,2,60–60,baseline_b,baseline_b
+2025-26,2026-04-12,1627783,Pascal Siakam,IND,0.01018701475036867,0.0,,,0.0,5,19–19,baseline_b,baseline_b
+2025-26,2026-04-12,1626164,Devin Booker,PHX,0.007153124395046554,0.0,,,0.0,2,45–45,baseline_b,baseline_b
+2025-26,2026-04-12,1630595,Cade Cunningham,DET,0.006759908067609335,0.0,,,0.0,3,58–58,baseline_b,baseline_b
+2025-26,2026-04-12,1628973,Jalen Brunson,NYK,0.006669618763753534,0.0,,1.0,1.0,0,51–51,baseline_b,baseline_b
+2025-26,2026-04-12,1630552,Jalen Johnson,ATL,0.006091827726335505,0.0,,1.0,1.0,0,45–45,baseline_b,baseline_b
+2025-26,2026-04-12,1629008,Michael Porter Jr.,BKN,0.005226887981382965,0.0,,,0.0,15,19–19,baseline_b,baseline_b
+2025-26,2026-04-12,203507,Giannis Antetokounmpo,MIL,0.0051178764627461985,0.0,,,0.0,29,31–31,baseline_b,baseline_b
+2025-26,2026-04-12,202695,Kawhi Leonard,LAC,0.004804163877177382,0.0,,,0.0,2,42–42,baseline_b,baseline_b
+2025-26,2026-04-12,1630559,Austin Reaves,LAL,0.001367432753983707,0.025,,,0.0,15,52–52,baseline_b,baseline_b
+2025-26,2026-04-12,1641718,Keyonte George,UTA,0.0008967326739014451,0.0,,,0.0,13,20–20,baseline_b,baseline_b
+2025-26,2026-04-12,1628374,Lauri Markkanen,UTA,0.0007030604526092566,0.0,,,0.0,25,20–20,baseline_b,baseline_b
+2025-26,2026-04-12,201939,Stephen Curry,GSW,0.0006256762540739897,0.0,,,0.0,24,37–37,baseline_b,baseline_b
+2025-26,2026-04-12,203954,Joel Embiid,PHI,0.00010239494524530893,0.0,,,0.0,29,44–44,baseline_b,baseline_b
+2025-26,2026-04-12,OTHER,其他球员,,7.641486770074458e-09,0.0,,,,65,,baseline_b,baseline_b

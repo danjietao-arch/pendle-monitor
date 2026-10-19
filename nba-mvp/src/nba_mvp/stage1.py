@@ -49,6 +49,7 @@ HISTORICAL_SEASONS = (
     "2022-23",
     "2023-24",
     "2024-25",
+    "2025-26",
 )
 DOCUMENTED_BLOCKERS = (
     {
@@ -131,6 +132,13 @@ VOTE_SOURCES = {
         "filename": "2024-25-mvp-voter-selections.pdf",
         "image": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2025/05/2024-25-Kia-NBA-Most-Valuable-Player-Voting-Results-.jpg",
         "image_filename": "2024-25-mvp-voting-results.jpg",
+    },
+    "2025-26": {
+        "page": "https://pr.nba.com/voting-results-2025-26-nba-regular-season-awards/",
+        "document": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2026/05/2025-26-Kia-NBA-Most-Valuable-Player-Voter-Selections.pdf",
+        "kind": "ballots",
+        "filename": "2025-26-mvp-voter-selections.pdf",
+        "note": "官方结果图是图片型 PDF，文本为空，不 OCR。总分由选票 PDF 按 10/7/5/3/1 汇总。",
     },
 }
 
@@ -510,6 +518,8 @@ def _manifest(root: Path, seasons: list[str], stats_probe: dict) -> dict:
             "stats.nba.com/stats 在此环境读超时。逐场来自 data.nba.com 官方赛程和 "
             "www.nba.com 箱分页内嵌的官方 game 对象。投票来自 pr.nba.com 链出的 NBA Communications 文件。"
             "2014-15 及更早赛程返回 HTTP 403，没有补造。"
+            "2025-26 赛程的 stt 是开球时间、比分为空；已结束场次的球队比分只来自箱分。"
+            "箱分页面没有 game 对象的场次不补比分、不写球员行。"
         ),
         "seasons": {},
     }
@@ -526,14 +536,20 @@ def _manifest(root: Path, seasons: list[str], stats_probe: dict) -> dict:
                 else:
                     failures.append({"game_id": record.get("game_id"), "error": record.get("error")})
         vote_meta = _read_json(paths["vote_meta"]) if paths["vote_meta"].exists() else None
+        schedule_entry = {
+            "path": str(paths["schedule"].relative_to(root)),
+            "url": schedule.get("url"),
+            "fetched_at": schedule.get("fetched_at"),
+            "sha256": _sha256(paths["schedule"]) if paths["schedule"].exists() else None,
+            "regular_season_games": len(games),
+        }
+        if season == "2025-26":
+            schedule_entry["note"] = (
+                "官方赛程 1200 场，gid 0022500001–0022501200 无缺号。stt 是开球时间，比分为空。"
+                "不把开球时间当成 Final，也不把场次补到 1230。"
+            )
         document["seasons"][season] = {
-            "schedule": {
-                "path": str(paths["schedule"].relative_to(root)),
-                "url": schedule.get("url"),
-                "fetched_at": schedule.get("fetched_at"),
-                "sha256": _sha256(paths["schedule"]) if paths["schedule"].exists() else None,
-                "regular_season_games": len(games),
-            },
+            "schedule": schedule_entry,
             "boxscores": {
                 "path": str(paths["boxscores"].relative_to(root)),
                 "sha256": _sha256(paths["boxscores"]) if paths["boxscores"].exists() else None,
