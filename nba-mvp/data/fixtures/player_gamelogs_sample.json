@@ -1,0 +1,12 @@
+{
+  "resultSets": [
+    {
+      "name": "PlayerGameLogs",
+      "headers": ["SEASON_YEAR", "PLAYER_ID", "PLAYER_NAME", "TEAM_ID", "TEAM_ABBREVIATION", "GAME_ID", "GAME_DATE", "MATCHUP", "WL", "MIN", "FGM", "FGA", "FTM", "FTA", "REB", "AST", "TOV", "STL", "BLK", "PTS"],
+      "rowSet": [
+        ["2098-99", 101, "Alpha Player", 10, "ALP", "0029800001", "2098-11-01", "ALP vs. BET", "W", "36:00", 10, 20, 4, 5, 8, 6, 3, 1, 1, 28],
+        ["2098-99", 102, "Beta Player", 11, "BET", "0029800001", "NOV 03, 2098", "BET @ ALP", "L", 32, 7, 16, 2, 2, 4, 9, 2, 2, 0, 18]
+      ]
+    }
+  ]
+}

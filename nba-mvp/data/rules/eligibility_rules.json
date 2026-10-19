@@ -1,0 +1,24 @@
+{
+  "rules": [
+    {
+      "season": "2025-26",
+      "status": "verified",
+      "award": "regular_season_mvp",
+      "min_games": 65,
+      "stat_leaderboard_minimum_games": 58,
+      "exceptions_require_official_ruling": true,
+      "source": "https://www.nba.com/news/cade-cunningham-luka-doncic-eligible-awards-2025-26",
+      "notes": "2025-26 奖项资格是 65 场门槛，并存在官方例外。统计榜 58 场门槛不是 MVP 门槛。只有官方认定无资格才可把获奖概率置 0。"
+    },
+    {
+      "season": "2026-27",
+      "status": "unverified",
+      "award": "regular_season_mvp",
+      "min_games": null,
+      "stat_leaderboard_minimum_games": 58,
+      "exceptions_require_official_ruling": true,
+      "source": null,
+      "notes": "2026-27 奖项资格文本尚未核实。不得沿用上一季门槛把球员概率置 0，也不得把统计榜门槛当成 MVP 门槛。"
+    }
+  ]
+}

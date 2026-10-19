@@ -1,0 +1,7 @@
+{
+  "exhaustive": false,
+  "event_id": null,
+  "resolution_text": null,
+  "notes": "只收录人工核对过的 2026-27 常规赛 MVP 主市场。发现流程不得自动写入本文件。exhaustive 为 false 时不做市价归一化。",
+  "markets": []
+}
