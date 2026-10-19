@@ -160,6 +160,11 @@ def main(argv: list[str] | None = None) -> int:
     stage4.add_argument("--seed", type=int, default=0)
     stage4.add_argument("--demo-season", default="2024-25")
     stage4.add_argument("--probe-live", action="store_true")
+    board = sub.add_parser("stage4-board")
+    board.add_argument("--season", required=True)
+    board.add_argument("--snapshot", default=None)
+    board.add_argument("--draws", type=int, default=40)
+    board.add_argument("--seed", type=int, default=0)
 
     args = parser.parse_args(argv)
     if args.cmd == "selftest":
@@ -296,5 +301,32 @@ def main(argv: list[str] | None = None) -> int:
             }
         )
         return 0 if result.get("status") in {"ok", "待采集"} else 1
+    if args.cmd == "stage4-board":
+        from nba_mvp.stage4 import publish_season_board
+
+        conn = _connection(cfg)
+        try:
+            result = publish_season_board(
+                cfg,
+                conn,
+                args.season,
+                snapshot_key=args.snapshot,
+                draws=args.draws,
+                seed=args.seed,
+            )
+        finally:
+            conn.close()
+        print(
+            {
+                "status": result.get("status"),
+                "season": result.get("season"),
+                "as_of": result.get("as_of"),
+                "snapshot": result.get("snapshot_key"),
+                "winner": result.get("winner"),
+                "paths": result.get("paths"),
+                "reason": result.get("reason"),
+            }
+        )
+        return 0 if result.get("status") == "ok" else 1
     parser.error(f"未知命令: {args.cmd}")
     return 2

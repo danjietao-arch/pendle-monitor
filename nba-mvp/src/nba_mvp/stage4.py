@@ -516,6 +516,148 @@ def run_stage4(cfg: dict, conn, *, draws: int = 40, seed: int = 0, bootstrap: in
     return summary
 
 
+def board_external_refs(html_text: str) -> list[str]:
+    import re
+
+    return re.findall(r"<(?:link|script|img)\b[^>]*(?:href|src)\s*=\s*['\"][^'\"]+['\"]", html_text, flags=re.I)
+
+
+def publish_season_board(cfg: dict, conn, season: str, *, snapshot_key: str | None = None, draws: int = 40, seed: int = 0) -> dict:
+    """Write a self-contained board for one archived season. Baseline B is the live column."""
+    from nba_mvp.eligibility import eligibility_for
+
+    rules = load_rules(project_path(cfg, "rules"))
+    rule = rules.get(season)
+    available = {
+        row["snapshot_key"]
+        for row in conn.execute("SELECT DISTINCT snapshot_key FROM feature_snapshots WHERE season = ?", (season,))
+    }
+    if snapshot_key is None:
+        snapshot_key = "end" if "end" in available else next((key for key in reversed(DEMO_KEYS) if key in available), None)
+    if snapshot_key not in available:
+        return {"status": "待采集", "season": season, "reason": "没有该赛季快照", "zero_filled": False}
+    seasons = sorted({row["season"] for row in conn.execute("SELECT DISTINCT season FROM feature_snapshots")}, key=season_start_year)
+    frames = {}
+    for item in seasons:
+        if season_start_year(item) > season_start_year(season):
+            continue
+        for key in DEMO_KEYS:
+            rows = load_snapshot_frame(conn, item, key)
+            if rows:
+                frames[(item, key)] = rows
+    current = frames.get((season, snapshot_key)) or []
+    focused = _focus_rows(current)
+    earlier_same = []
+    earlier_end = []
+    train_by_key: dict[str, list[dict]] = {}
+    for (other_season, key), rows in frames.items():
+        if season_start_year(other_season) >= season_start_year(season):
+            continue
+        train_by_key.setdefault(key, []).extend(rows)
+        if key == snapshot_key:
+            earlier_same.extend(rows)
+        if key == "end":
+            earlier_end.extend(rows)
+    baseline = _scores_for(earlier_same, focused) if earlier_same else None
+    if not baseline:
+        return {"status": "待训练", "season": season, "reason": "更早赛季不足以拟合基线 B", "zero_filled": False}
+    schedule = _load_schedule(cfg, season)
+    earlier_rows = [row for rows in train_by_key.values() for row in rows]
+    shrinkage = fit_shrinkage_schedule(shrinkage_samples(earlier_rows))
+    models = fit_award_models(earlier_end, n_models=3, seed=seed)
+    states = [state_from_row(row, schedule) for row in focused]
+    simulated = simulate_remainder(states, shrinkage, models, rule, draws=draws, seed=seed)
+    as_of = max((row.get("snapshot_date") or "" for row in focused), default="")
+    vote = conn.execute(
+        "SELECT player_name, vote_points FROM vote_totals WHERE season = ? AND is_winner = 1",
+        (season,),
+    ).fetchone()
+    if vote:
+        points = vote["vote_points"]
+        points_text = str(int(points)) if float(points).is_integer() else str(points)
+        banner = f"官方选票已入库，获奖者 {vote['player_name']}（{points_text} 分）。下表是模型概率，不是选票份额。"
+    else:
+        banner = "官方选票待采集。下表只来自当时可知的比赛，没有用空选票填概率。"
+    live_rows = _display_rows(focused, baseline, None, reasons=["数据", "基线 B", "真实预测"])
+    for row in live_rows:
+        source = next(item for item in focused if item["player_id"] == row["player_id"])
+        eligibility = eligibility_for(rule, source.get("games_played"), source.get("official_eligible"))
+        row["p_eligibility"] = eligibility["p_eligibility"]
+        row["games_needed"] = games_still_needed(rule, source.get("games_played"))
+    remaining = [state.get("remaining_games") for state in states if state["player_id"] != OTHER_ID]
+    season_complete = bool(remaining) and all(value == 0 for value in remaining)
+    mc_reasons = ["数据", "球队", "实验性蒙特卡洛", "不是真实预测"]
+    if season_complete:
+        mc_reasons.append("赛季已结束，再缺席场次不会改写已发生的比赛")
+    scenario_rows = []
+    if simulated.get("status") == "ok":
+        scenario_rows = _display_rows(focused, simulated.get("probabilities"), simulated, reasons=mc_reasons)
+    elif not season_complete:
+        missed_target = next((row["player_id"] for row in live_rows if row["player_id"] != OTHER_ID), None)
+        missed = with_extra_absences(states, missed_target, 10) if missed_target else None
+        if missed:
+            missed_sim = simulate_remainder(missed, shrinkage, models, rule, draws=draws, seed=seed + 1)
+            if missed_sim.get("status") == "ok":
+                scenario_rows = _display_rows(focused, missed_sim.get("probabilities"), missed_sim, reasons=mc_reasons + ["假设情景：再缺席 10 场"])
+    top_ids = [row["player_id"] for row in live_rows if row.get("p_award") is not None][:4]
+    season_rows = {key: frames.get((season, key)) or [] for key in DEMO_KEYS}
+    curve = _curve(train_by_key, season_rows, top_ids)
+    gate = {
+        "primary": "baseline_b",
+        "promoted": False,
+        "reason": "这张看板的真实预测是基线 B。蒙特卡洛只放在假设情景里。",
+    }
+    html_text = render_research_board(
+        live_rows=live_rows[:15],
+        scenario_rows=scenario_rows[:15],
+        curve=curve,
+        data_status="ok",
+        model_version="baseline_b",
+        as_of=as_of,
+        season=f"{season} {snapshot_key}",
+        gate=gate,
+        banner=banner,
+    )
+    if board_external_refs(html_text):
+        raise RuntimeError("看板含有外部资源，htmlpreview 无法单独打开")
+    folder = reports_dir(cfg)
+    boards = folder / "boards"
+    boards.mkdir(parents=True, exist_ok=True)
+    paths = {
+        "board": folder / f"stage4_board_{season}.html",
+        "stable": boards / f"{season}.html",
+        "json": boards / f"{season}.json",
+        "csv": boards / f"{season}.csv",
+    }
+    write_text(paths["board"], html_text)
+    write_text(paths["stable"], html_text)
+    payload = {
+        "season": season,
+        "as_of": as_of,
+        "snapshot_key": snapshot_key,
+        "primary": "baseline_b",
+        "vote_status": "ok" if vote else "待采集",
+        "winner": None if vote is None else vote["player_name"],
+        "simulation_status": simulated.get("status"),
+        "season_complete": season_complete,
+        "zero_filled": False,
+        "disclaimer": DISCLAIMER,
+        "live_rows": live_rows,
+        "scenario_rows": scenario_rows,
+    }
+    write_json(paths["json"], payload)
+    _write_csv(
+        paths["csv"],
+        live_rows,
+        scenario_rows,
+        season=season,
+        as_of=as_of,
+        model_version="baseline_b",
+        primary="baseline_b",
+    )
+    return {"status": "ok", "season": season, "as_of": as_of, "snapshot_key": snapshot_key, "paths": {key: str(path) for key, path in paths.items()}, "winner": payload["winner"], "zero_filled": False}
+
+
 def _write_blocked(cfg: dict, summary: dict, probe_live: bool) -> None:
     note = _live_note(cfg) if probe_live else summary["reason"]
     html = render_research_board(

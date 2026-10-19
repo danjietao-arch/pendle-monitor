@@ -25,10 +25,10 @@ PRD 的核心字段和当前落点：
 `stats.nba.com/stats` 在此环境会读超时，不作为 Stage 1 的可用路径。已经走通的官方路径是：
 
 - 逐场：`www.nba.com/game/{game_id}/box-score` 页面里的官方 `game` 对象。存档时去掉转播和图表，保留身份、比分和球员技术统计。
-- 球队赛果和赛程日期：`data.nba.com` 的 `00_full_schedule.json`。只收常规赛 `gid` 以 `002` 开头且状态为 `Final` 的比赛。
-- 投票：NBA Communications 的结果表或选票。2015—16 是 `pr.nba.com` 上的官方 HTML 表。2016—17 到 2018—19、2020—21、2021—22、2022—23、2023—24 是结果 PDF。2019—20 和 2024—25 的结果图/扫描件只说明来源、不做 OCR，总分由选票 PDF 按 10/7/5/3/1 汇总。
+- 球队赛果和赛程日期：`data.nba.com` 的 `00_full_schedule.json`。只收常规赛 `gid` 以 `002` 开头的比赛。赛程状态为 `Final` 时采用赛程比分；否则比分留空，等箱分里 `gameStatus` 为 3 的 Final 补上。
+- 投票：NBA Communications 的结果表或选票。2015—16 是 `pr.nba.com` 上的官方 HTML 表。2016—17 到 2018—19、2020—21、2021—22、2022—23、2023—24 是结果 PDF。2019—20、2024—25 和 2025—26 的结果图是图片或扫描件，只说明来源、不做 OCR，总分由选票 PDF 按 10/7/5/3/1 汇总。
 
-原始文件在 `data/archive/stage1/`：`schedules/*.json`、`boxscores/*.jsonl.gz`、`votes/*`、`manifest.json`。重放命令不访问网络。2024—25 的 `0022401084` 箱分被源站拒绝，该场只有赛程里的球队比分，没有球员行。2019—20 有 1059 场、2020—21 有 1080 场，都是缩短赛季，不补到 1230 场。2017—18 赛程里的 `0021700211`（2017-11-15，猛龙客场对鹈鹕）状态停在 `1st Qtr`，赛程比分不采用；该场以官方箱分的 Final 比分写入。箱分也拿不到时，胜负保持为空，不记成输球。
+原始文件在 `data/archive/stage1/`：`schedules/*.json`、`boxscores/*.jsonl.gz`、`votes/*`、`manifest.json`。重放命令不访问网络。2024—25 的 `0022401084` 箱分被源站拒绝，该场只有赛程里的球队比分，没有球员行。2019—20 有 1059 场、2020—21 有 1080 场，都是缩短赛季，不补到 1230 场。2017—18 赛程里的 `0021700211`（2017-11-15，猛龙客场对鹈鹕）状态停在 `1st Qtr`，赛程比分不采用；该场以官方箱分的 Final 比分写入。箱分也拿不到时，胜负保持为空，不记成输球。2025—26 官方赛程是 1200 场（2025-10-21 至 2026-04-12），`stt` 全是开球时间、比分为空，不把开球时间当成 Final，也不补到 1230 场。`0022500259`（奇才客场对森林狼）、`0022500260`（掘金客场对鹈鹕）、`0022500261`（国王客场对雷霆）都在 2025-11-19：`www.nba.com/game/{id}/box-score` 返回 HTTP 303 到 `/games`，页面没有 game 对象；`cdn.nba.com` 箱分 JSON 为 Access Denied。这三场赛程比分本来就是空的，所以不保留球队比分，也不写球员行。
 
 `player_features.prior_pts_per_game` 和 `prior_games` 只来自上一季、并且不晚于本条快照日期的比赛。`team_features.prior_win_pct` 是该球员上一季最后所在球队、在快照日期之前的胜率。没有上一季时这三项为空，不写成 0。2015—16 是存档的第一季，赛前这三项为空。基线 A 只用这三项。基线 B 才使用本季场均、本季胜率和已赛场次。模型在打分时用训练集的中位数填补特征里的空值，这个填补不写回快照。
 
@@ -83,6 +83,8 @@ Polymarket 价格不是特征。`use_in_training` 为 true 时训练直接拒绝
 模拟达标概率 `p_games_threshold` 只在资格规则 `verified` 且写了 `min_games` 时有值。统计榜的 58 场不参与。规则 `unverified` 时它和 `p_eligibility` 都为空。官方认定无资格的球员获奖概率为 0。
 
 门禁比较同一批候选上的基线 B 和蒙特卡洛。模拟次数少于 200，或两个随机种子没有同时优于基线 B 时，不升格。未升格时 CSV 的 `primary` 是 `baseline_b`，看板上的真实预测用基线 B，蒙特卡洛和「再缺席 10 场」放在假设情景区块。
+
+`stage4-board --season 2025-26` 只写该赛季的看板，不改 `stage4_board.html`。默认快照是 `end`（没有则用已有快照里最晚的一个）。真实预测只用更早赛季拟合的基线 B。页面是内联 CSS/SVG，同一份 HTML 写到 `data/reports/stage4_board_2025-26.html` 和 `data/reports/boards/2025-26.html`。数值以 `data/reports/boards/2025-26.json` 和同名 CSV 为准。官方选票已入库时，页眉写获奖者，并说明表内概率不是选票份额。
 
 周快照字段：`player_id`、`player_name`、`p_award`、`delta_pp_vs_last_week`、`p_eligibility`、`projected_wins_low`、`projected_wins_high`、`as_of`、`model_version`、`reasons`。没有上周概率时 Δpp 为空，不写成 0。没有胜场或剩余赛程时预计胜场区间为空。
 

@@ -984,8 +984,12 @@ def test_stage2_archive_backtest(tmp_path):
             assert summary["schedule_games"][season] < 1230
             assert summary["schedule_games"][season] > 0
     for season, count in summary["schedule_games"].items():
-        if season not in {"2019-20", "2020-21"}:
-            assert count == 1230
+        if season in {"2019-20", "2020-21"}:
+            continue
+        if season == "2025-26":
+            assert count == 1200
+            continue
+        assert count == 1230
     plot = Path(summary["calibration_plot"])
     assert plot.exists()
     assert plot.read_text(encoding="utf-8").startswith("<svg")
@@ -1333,6 +1337,59 @@ def test_stage3_daily_incremental(tmp_path):
         conn.close()
 
 
+def test_2025_26_archive_and_board():
+    from nba_mvp.stage1 import load_season_archive, archive_root
+    from nba_mvp.stage4 import board_external_refs
+
+    cfg = load_config()
+    loaded = load_season_archive(archive_root(cfg), "2025-26")
+    games = loaded["schedule_games"]
+    assert len(games) == 1200
+    numbers = sorted(int(game["game_id"]) for game in games)
+    assert numbers == list(range(22500001, 22501201))
+    assert min(game["game_date"] for game in games) == "2025-10-21"
+    assert max(game["game_date"] for game in games) == "2026-04-12"
+    assert all(game["schedule_final"] is False for game in games)
+    assert all(game["home"]["points_for"] is None and game["away"]["points_for"] is None for game in games)
+    failed = [record for record in loaded["box_records"] if not record.get("body")]
+    assert sorted(record["game_id"] for record in failed) == ["0022500259", "0022500260", "0022500261"]
+    for record in failed:
+        assert record.get("body") is None
+        assert "球员" in (record.get("error") or "") or "game" in (record.get("error") or "")
+    assert loaded["vote_error"] is None
+    votes = loaded["vote_rows"]
+    assert len(votes) == 8
+    assert sum(row["vote_points"] for row in votes) == 2600
+    winners = [row for row in votes if row["is_winner"] == 1]
+    assert len(winners) == 1
+    assert winners[0]["player_name"] == "Shai Gilgeous-Alexander"
+    assert winners[0]["vote_points"] == 939
+    reports = project_path(cfg, "reports")
+    board = (reports / "boards" / "2025-26.html").read_text(encoding="utf-8")
+    twin = (reports / "stage4_board_2025-26.html").read_text(encoding="utf-8")
+    assert board == twin
+    assert not board_external_refs(board)
+    assert "<link" not in board.lower()
+    live, _scenario = board.split("data-kind='scenario'", 1)
+    assert "真实预测" in live
+    assert "再缺席" not in live
+    assert "假设情景" in board
+    payload = json.loads((reports / "boards" / "2025-26.json").read_text(encoding="utf-8"))
+    assert payload["season"] == "2025-26"
+    assert payload["snapshot_key"] == "end"
+    assert payload["primary"] == "baseline_b"
+    assert payload["vote_status"] == "ok"
+    assert payload["winner"] == "Shai Gilgeous-Alexander"
+    assert payload["zero_filled"] is False
+    assert payload["as_of"]
+    live_rows = payload["live_rows"]
+    assert any(row["player_id"] == "OTHER" for row in live_rows)
+    probabilities = [row["p_award"] for row in live_rows if row.get("p_award") is not None]
+    assert probabilities
+    assert abs(sum(probabilities) - 1) < 1e-6
+    assert all(value is None or value >= 0 for value in probabilities)
+
+
 def main() -> int:
     import tempfile
 
@@ -1346,6 +1403,7 @@ def main() -> int:
         test_stage2_archive_backtest,
         test_stage3_daily_incremental,
         test_stage4_monte_carlo_and_board,
+        test_2025_26_archive_and_board,
         test_vote_and_gamelog_parsers,
         test_quote_book_and_future_backfill,
         test_delta_alerts_and_normalization,

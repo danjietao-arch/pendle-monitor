@@ -234,6 +234,7 @@ def render_research_board(
     season: str,
     gate: dict | None,
     collection_note: str | None = None,
+    banner: str | None = None,
 ) -> str:
     """Personal research page. The scenario block is not the live prediction."""
     gate = gate or {}
@@ -252,6 +253,8 @@ def render_research_board(
         f"<p>赛季 {html.escape(season)} · as_of {html.escape(as_of)} · {html.escape(model_version)} · {html.escape(data_status)}</p>",
         f"<p>默认预测：{html.escape(str(primary))}。{html.escape(str(gate.get('reason') or ''))}</p>",
     ]
+    if banner:
+        parts.append(f"<p>{html.escape(banner)}</p>")
     if data_status == "STALE":
         parts.append(f"<p>STALE · 待采集。{html.escape(collection_note or '')}</p>")
     elif collection_note:

@@ -1,0 +1,848 @@
+{
+  "season": "2025-26",
+  "as_of": "2026-04-12",
+  "snapshot_key": "end",
+  "primary": "baseline_b",
+  "vote_status": "ok",
+  "winner": "Shai Gilgeous-Alexander",
+  "simulation_status": "ok",
+  "season_complete": true,
+  "zero_filled": false,
+  "disclaimer": "这是对未来媒体投票结果的估计，不是最佳球员评分，不保证准确，也不构成投注建议。",
+  "live_rows": [
+    {
+      "player_id": "203999",
+      "player_name": "Nikola Jokić",
+      "team_abbr": "DEN",
+      "p_award": 0.4024769339771051,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 3,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1629029",
+      "player_name": "Luka Dončić",
+      "team_abbr": "LAL",
+      "p_award": 0.24660938210420466,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 3,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1628983",
+      "player_name": "Shai Gilgeous-Alexander",
+      "team_abbr": "OKC",
+      "p_award": 0.08099639980774224,
+      "p_eligibility": 1.0,
+      "p_games_threshold": null,
+      "games_needed": 0,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1627759",
+      "player_name": "Jaylen Brown",
+      "team_abbr": "BOS",
+      "p_award": 0.07029520527067198,
+      "p_eligibility": 1.0,
+      "p_games_threshold": null,
+      "games_needed": 0,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1628378",
+      "player_name": "Donovan Mitchell",
+      "team_abbr": "CLE",
+      "p_award": 0.029717421136346244,
+      "p_eligibility": 1.0,
+      "p_games_threshold": null,
+      "games_needed": 0,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1630162",
+      "player_name": "Anthony Edwards",
+      "team_abbr": "MIN",
+      "p_award": 0.025763320541610887,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 5,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1630166",
+      "player_name": "Deni Avdija",
+      "team_abbr": "POR",
+      "p_award": 0.02144327629474463,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 1,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1627750",
+      "player_name": "Jamal Murray",
+      "team_abbr": "DEN",
+      "p_award": 0.018239510087488767,
+      "p_eligibility": 1.0,
+      "p_games_threshold": null,
+      "games_needed": 0,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "201142",
+      "player_name": "Kevin Durant",
+      "team_abbr": "HOU",
+      "p_award": 0.01356825546374598,
+      "p_eligibility": 1.0,
+      "p_games_threshold": null,
+      "games_needed": 0,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "201935",
+      "player_name": "James Harden",
+      "team_abbr": "CLE",
+      "p_award": 0.012868318128037385,
+      "p_eligibility": 1.0,
+      "p_games_threshold": null,
+      "games_needed": 0,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1630178",
+      "player_name": "Tyrese Maxey",
+      "team_abbr": "PHI",
+      "p_award": 0.011359183367987021,
+      "p_eligibility": 1.0,
+      "p_games_threshold": null,
+      "games_needed": 0,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1641705",
+      "player_name": "Victor Wembanyama",
+      "team_abbr": "SAS",
+      "p_award": 0.010957067074594524,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 2,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1627783",
+      "player_name": "Pascal Siakam",
+      "team_abbr": "IND",
+      "p_award": 0.01018701475036867,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 5,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1626164",
+      "player_name": "Devin Booker",
+      "team_abbr": "PHX",
+      "p_award": 0.007153124395046554,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 2,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1630595",
+      "player_name": "Cade Cunningham",
+      "team_abbr": "DET",
+      "p_award": 0.006759908067609335,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 3,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1628973",
+      "player_name": "Jalen Brunson",
+      "team_abbr": "NYK",
+      "p_award": 0.006669618763753534,
+      "p_eligibility": 1.0,
+      "p_games_threshold": null,
+      "games_needed": 0,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1630552",
+      "player_name": "Jalen Johnson",
+      "team_abbr": "ATL",
+      "p_award": 0.006091827726335505,
+      "p_eligibility": 1.0,
+      "p_games_threshold": null,
+      "games_needed": 0,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1629008",
+      "player_name": "Michael Porter Jr.",
+      "team_abbr": "BKN",
+      "p_award": 0.005226887981382965,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 15,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "203507",
+      "player_name": "Giannis Antetokounmpo",
+      "team_abbr": "MIL",
+      "p_award": 0.0051178764627461985,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 29,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "202695",
+      "player_name": "Kawhi Leonard",
+      "team_abbr": "LAC",
+      "p_award": 0.004804163877177382,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 2,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1630559",
+      "player_name": "Austin Reaves",
+      "team_abbr": "LAL",
+      "p_award": 0.001367432753983707,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 15,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1641718",
+      "player_name": "Keyonte George",
+      "team_abbr": "UTA",
+      "p_award": 0.0008967326739014451,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 13,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "1628374",
+      "player_name": "Lauri Markkanen",
+      "team_abbr": "UTA",
+      "p_award": 0.0007030604526092566,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 25,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "201939",
+      "player_name": "Stephen Curry",
+      "team_abbr": "GSW",
+      "p_award": 0.0006256762540739897,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 24,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "203954",
+      "player_name": "Joel Embiid",
+      "team_abbr": "PHI",
+      "p_award": 0.00010239494524530893,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 29,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    },
+    {
+      "player_id": "OTHER",
+      "player_name": "其他球员",
+      "team_abbr": null,
+      "p_award": 7.641486770074458e-09,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": 65,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "基线 B",
+        "真实预测"
+      ]
+    }
+  ],
+  "scenario_rows": [
+    {
+      "player_id": "203999",
+      "player_name": "Nikola Jokić",
+      "team_abbr": "DEN",
+      "p_award": 0.425,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 3,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1629029",
+      "player_name": "Luka Dončić",
+      "team_abbr": "LAL",
+      "p_award": 0.175,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 3,
+      "record_band": "52–52",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1628983",
+      "player_name": "Shai Gilgeous-Alexander",
+      "team_abbr": "OKC",
+      "p_award": 0.125,
+      "p_eligibility": null,
+      "p_games_threshold": 1.0,
+      "games_needed": 0,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1627759",
+      "player_name": "Jaylen Brown",
+      "team_abbr": "BOS",
+      "p_award": 0.1,
+      "p_eligibility": null,
+      "p_games_threshold": 1.0,
+      "games_needed": 0,
+      "record_band": "56–56",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1630162",
+      "player_name": "Anthony Edwards",
+      "team_abbr": "MIN",
+      "p_award": 0.05,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 5,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1627750",
+      "player_name": "Jamal Murray",
+      "team_abbr": "DEN",
+      "p_award": 0.05,
+      "p_eligibility": null,
+      "p_games_threshold": 1.0,
+      "games_needed": 0,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1628378",
+      "player_name": "Donovan Mitchell",
+      "team_abbr": "CLE",
+      "p_award": 0.025,
+      "p_eligibility": null,
+      "p_games_threshold": 1.0,
+      "games_needed": 0,
+      "record_band": "51–51",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "201142",
+      "player_name": "Kevin Durant",
+      "team_abbr": "HOU",
+      "p_award": 0.025,
+      "p_eligibility": null,
+      "p_games_threshold": 1.0,
+      "games_needed": 0,
+      "record_band": "51–51",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1630559",
+      "player_name": "Austin Reaves",
+      "team_abbr": "LAL",
+      "p_award": 0.025,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 15,
+      "record_band": "52–52",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1630178",
+      "player_name": "Tyrese Maxey",
+      "team_abbr": "PHI",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 1.0,
+      "games_needed": 0,
+      "record_band": "44–44",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "202695",
+      "player_name": "Kawhi Leonard",
+      "team_abbr": "LAC",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 2,
+      "record_band": "42–42",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "203507",
+      "player_name": "Giannis Antetokounmpo",
+      "team_abbr": "MIL",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 29,
+      "record_band": "31–31",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "203954",
+      "player_name": "Joel Embiid",
+      "team_abbr": "PHI",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 29,
+      "record_band": "44–44",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1628374",
+      "player_name": "Lauri Markkanen",
+      "team_abbr": "UTA",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 25,
+      "record_band": "20–20",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1626164",
+      "player_name": "Devin Booker",
+      "team_abbr": "PHX",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 2,
+      "record_band": "45–45",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "201939",
+      "player_name": "Stephen Curry",
+      "team_abbr": "GSW",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 24,
+      "record_band": "37–37",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1628973",
+      "player_name": "Jalen Brunson",
+      "team_abbr": "NYK",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 1.0,
+      "games_needed": 0,
+      "record_band": "51–51",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1641705",
+      "player_name": "Victor Wembanyama",
+      "team_abbr": "SAS",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 2,
+      "record_band": "60–60",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1630166",
+      "player_name": "Deni Avdija",
+      "team_abbr": "POR",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 1,
+      "record_band": "41–41",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1629008",
+      "player_name": "Michael Porter Jr.",
+      "team_abbr": "BKN",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 15,
+      "record_band": "19–19",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1627783",
+      "player_name": "Pascal Siakam",
+      "team_abbr": "IND",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 5,
+      "record_band": "19–19",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1630595",
+      "player_name": "Cade Cunningham",
+      "team_abbr": "DET",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 3,
+      "record_band": "58–58",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "201935",
+      "player_name": "James Harden",
+      "team_abbr": "CLE",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 1.0,
+      "games_needed": 0,
+      "record_band": "51–51",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1641718",
+      "player_name": "Keyonte George",
+      "team_abbr": "UTA",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 0.0,
+      "games_needed": 13,
+      "record_band": "20–20",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "1630552",
+      "player_name": "Jalen Johnson",
+      "team_abbr": "ATL",
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": 1.0,
+      "games_needed": 0,
+      "record_band": "45–45",
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    },
+    {
+      "player_id": "OTHER",
+      "player_name": "其他球员",
+      "team_abbr": null,
+      "p_award": 0.0,
+      "p_eligibility": null,
+      "p_games_threshold": null,
+      "games_needed": null,
+      "record_band": null,
+      "reasons": [
+        "数据",
+        "球队",
+        "实验性蒙特卡洛",
+        "不是真实预测",
+        "赛季已结束，再缺席场次不会改写已发生的比赛"
+      ]
+    }
+  ]
+}
