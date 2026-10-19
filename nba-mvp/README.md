@@ -33,6 +33,54 @@ PYTHONPATH=src python3 -m nba_mvp selftest
 
 已知缺口：2024—25 的 `0022401084`（2025-03-30，活塞客场对森林狼）在 `www.nba.com` 上持续返回 Access Denied。该场球队比分仍在赛程存档里，球员逐场缺失，没有填 0。
 
+## Stage 2：历史赛季与两条基线
+
+可拉取的有标签赛季是 2015—16 到 2024—25。`data.nba.com` 对 2014 及更早的赛程返回 HTTP 403，那些赛季没有入库，也没有补造比赛或选票。2019—20 的官方结果 PDF 是扫描件，总分来自选票 PDF 的 10/7/5/3/1，不做 OCR。缩短赛季保持实际场次，不补到 1230 场。
+
+基线 A 只用赛前可知的上场均、上场次和上季球队胜率。基线 B 是 L2 逻辑回归（`C=0.1`，`random_state=0`），按快照键只用更早赛季的同一快照拟合，再在该快照内 softmax。Walk-forward 比较 log loss 和 Brier；Top-1 / Top-3 是辅助指标。可靠性图是 `data/reports/stage2_reliability.svg`。
+
+```bash
+PYTHONPATH=src python3 -m nba_mvp stage1-fetch --season 2015-16 --season 2016-17 --season 2017-18 --season 2018-19 --season 2019-20 --season 2020-21 --season 2021-22
+PYTHONPATH=src python3 -m nba_mvp stage2-backtest
+PYTHONPATH=src python3 -m nba_mvp selftest
+```
+
+`stage2-backtest` 只读存档，不访问网络，也不对 2026—27 调用 `infer`。有标签赛季少于 10 个时，状态保持「待训练」。这次存档里 10 个赛季都有官方选票，门禁达到后会写出训练产物，但本命令仍不推断 2026—27。赔率和 Polymarket 不进入这条回测。
+
+2016—17 不进入 A/B 的配对均值：2015—16 没有更早赛季，赛前特征全空，基线 A 无法拟合。从 2017—18 起的配对折上，基线 B 的平均 log loss 和 Brier 都不高于基线 A。`tg_10` 和 `tg_40` 的 Brier 略高，写在报告的 `snapshot_shortfalls` 里，没有为了抹平这个差距去调 `C`。Top-1 / Top-3 只作辅助。可靠性图的正样本就是这些留出快照，样本很小。
+
+## Stage 3：每日增量
+
+`stage3-daily` 只吃 `as_of` 当天及之前已经结束的比赛。同一天再跑一次不会重复写入比赛、周快照或日志。抓取失败时保留已有行，日志和页面标 `STALE`，页面继续显示上一份周快照，缺比赛写「待采集」，不会把球员数据填成 0。未证实伤病不入库，也不把获奖概率置 0。Polymarket 不在这条路径上。
+
+2026—27 赛程在 `data.nba.com` 上目前是 HTTP 403。非存档日更会再请求一次官方伤病 PDF / 伤病页；拿不到就记「待采集」，拿到文件但没有已验证的解析器就记「未解析」，两种情况都不写入球员状态、不把概率置 0。已存档的赛季可以用 `--source archive` 按天重放，这条命令不访问伤病站。
+
+```bash
+PYTHONPATH=src python3 -m nba_mvp stage3-daily
+PYTHONPATH=src python3 -m nba_mvp stage3-daily --source archive --season 2024-25 --as-of 2024-10-24
+```
+
+日志和输出：
+
+- `data/reports/daily/run_log.jsonl`：每次日更一条，同一状态不重复追加
+- `data/reports/daily/<season>/<as_of>.json`：当天新比赛、缺失场次、推断状态。推断成功时 `curve` 带上当天概率行，用来保留每日曲线
+- `data/reports/weekly/<season>/<as_of>.json` 和同名 CSV：球员、概率、相对上周 Δpp、资格概率、预计胜场区间、`as_of`、`model_version`、理由
+- `data/reports/stage3_latest.json` 和 `data/reports/stage3_board.html`：最近一次日更。抓取失败时页面标 `STALE` 并留下上一份周快照；没有可展示的概率时写「待采集」
+
+周快照只在基线 B 已过门禁并且当天推断成功时写出。预计胜场是收缩后胜率的简单区间，不是蒙特卡洛。
+
+## Stage 4：余量模拟和研究看板
+
+`stage4-simulate` 用更早赛季拟合收缩 `w = 场次 / (场次 + k)`，再对目标快照做赛季余量模拟。`k` 由历史误差选，不把「打满 20 场」写成完全相信当季。每条情景模拟剩余出勤、未来得分和球队胜场，再用更早赛季的获奖模型抽一次票。`P(i) = 抽中次数 / N`，候选里保留其他球员。投票参数用自助法重拟合的多份模型表示。
+
+默认预测仍是基线 B。升格要同时满足：至少 200 次模拟、两个随机种子都在 log loss、Brier 和 log loss 波动上优于基线 B。少于此数只记点估计，不改默认。`config.json` 里 `monte_carlo.enabled` 保持 false。2026—27 资格仍是 `unverified`，模拟不会按 65 场或统计榜 58 场把获奖概率置 0。
+
+```bash
+PYTHONPATH=src python3 -m nba_mvp stage4-simulate --demo-season 2024-25 --draws 200 --seed 0 --probe-live
+```
+
+打开 `data/reports/stage4_board.html`。真实预测和假设情景分属两个区块；「再缺席 10 场」只出现在假设情景里。数值以 `data/reports/stage4_monte_carlo.json` 和 `data/reports/stage4_probabilities.csv` 为准。`--probe-live` 会再请求一次 2026—27 赛程和伤病页，失败时写在看板上，不编造比赛。
+
 ## 市场
 
 `data/registry/market_registry.json` 一开始是空的。程序只会把 Gamma 搜索结果放进待审核队列。总决赛 MVP、错误赛季、未人工确认的市场不会进入对照。审核通过后手工写入注册表，每名球员只保留一个主市场。
@@ -41,7 +89,7 @@ PYTHONPATH=src python3 -m nba_mvp selftest
 
 ## 模型
 
-基线 B 是带 L2 的逻辑回归，再在每个快照内做 softmax。有标签的历史赛季少于 `min_historical_seasons`（默认 10），或模型来自合成样本时，目标赛季不输出概率。蒙特卡洛默认关闭。收缩权重只在回测拟合出结果后才使用。
+基线 A 是赛前先验。基线 B 是带 L2 的逻辑回归，再在每个快照内做 softmax。有标签的历史赛季少于 `min_historical_seasons`（默认 10），或模型来自合成样本时，目标赛季不输出概率。蒙特卡洛默认关闭。收缩权重只在回测拟合出结果后才使用。Stage 2 的对照见上一节，不使用 Polymarket 价格。
 
 ## 目录
 

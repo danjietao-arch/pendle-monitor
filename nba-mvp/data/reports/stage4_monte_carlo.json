@@ -1,0 +1,214 @@
+{
+  "stage": 4,
+  "status": "ok",
+  "primary": "baseline_b",
+  "promoted": false,
+  "reason": "两个随机种子没有同时在校准和稳定性上优于基线 B。默认仍是基线 B。",
+  "gate": {
+    "promoted": false,
+    "primary": "baseline_b",
+    "folds": 8,
+    "mc_log_loss": 2.214886118095386,
+    "baseline_log_loss": 2.4580330534356527,
+    "mc_brier": 0.037809615384615386,
+    "baseline_brier": 0.038740847755041406,
+    "mc_log_loss_sd": 1.042224988929167,
+    "baseline_log_loss_sd": 1.7440367665500556,
+    "reason": "两个随机种子没有同时在校准和稳定性上优于基线 B。默认仍是基线 B。",
+    "seed": 0,
+    "draws": 200,
+    "confirm_seed": 1,
+    "confirm_promoted": false,
+    "confirm_mc_log_loss": 2.6290881745234653,
+    "confirm_baseline_log_loss": 2.4580330534356527,
+    "point_estimate_promoted": true
+  },
+  "draws": 200,
+  "seed": 0,
+  "folds": [
+    {
+      "season": "2015-16",
+      "snapshot_key": "tg_40",
+      "monte_carlo_status": "disabled",
+      "baseline_scored": false,
+      "monte_carlo_scored": false
+    },
+    {
+      "season": "2016-17",
+      "snapshot_key": "tg_40",
+      "monte_carlo_status": "disabled",
+      "baseline_scored": true,
+      "monte_carlo_scored": false
+    },
+    {
+      "season": "2017-18",
+      "snapshot_key": "tg_40",
+      "monte_carlo_status": "ok",
+      "baseline_scored": true,
+      "monte_carlo_scored": true,
+      "monte_carlo": {
+        "log_loss": 0.7657178733947807,
+        "brier": 0.013461538461538457,
+        "top1": true,
+        "top3": true
+      },
+      "baseline_b": {
+        "log_loss": 0.4944081518722721,
+        "brier": 0.006971558706079491,
+        "top1": true,
+        "top3": true
+      }
+    },
+    {
+      "season": "2018-19",
+      "snapshot_key": "tg_40",
+      "monte_carlo_status": "ok",
+      "baseline_scored": true,
+      "monte_carlo_scored": true,
+      "monte_carlo": {
+        "log_loss": 2.5902671654458267,
+        "brier": 0.044048076923076926,
+        "top1": false,
+        "top3": true
+      },
+      "baseline_b": {
+        "log_loss": 4.664723533412455,
+        "brier": 0.0665543904488148,
+        "top1": false,
+        "top3": false
+      }
+    },
+    {
+      "season": "2019-20",
+      "snapshot_key": "tg_40",
+      "monte_carlo_status": "ok",
+      "baseline_scored": true,
+      "monte_carlo_scored": true,
+      "monte_carlo": {
+        "log_loss": 2.995732273553991,
+        "brier": 0.05243846153846154,
+        "top1": false,
+        "top3": false
+      },
+      "baseline_b": {
+        "log_loss": 2.826638544151478,
+        "brier": 0.05431800232093469,
+        "top1": false,
+        "top3": false
+      }
+    },
+    {
+      "season": "2020-21",
+      "snapshot_key": "tg_40",
+      "monte_carlo_status": "ok",
+      "baseline_scored": true,
+      "monte_carlo_scored": true,
+      "monte_carlo": {
+        "log_loss": 1.7147984280919266,
+        "brier": 0.028730769230769233,
+        "top1": false,
+        "top3": true
+      },
+      "baseline_b": {
+        "log_loss": 1.0117890476629974,
+        "brier": 0.01801981901695159,
+        "top1": true,
+        "top3": true
+      }
+    },
+    {
+      "season": "2021-22",
+      "snapshot_key": "tg_40",
+      "monte_carlo_status": "ok",
+      "baseline_scored": true,
+      "monte_carlo_scored": true,
+      "monte_carlo": {
+        "log_loss": 0.5191938734365074,
+        "brier": 0.007353846153846155,
+        "top1": true,
+        "top3": true
+      },
+      "baseline_b": {
+        "log_loss": 0.3735902979930964,
+        "brier": 0.004476866926087745,
+        "top1": true,
+        "top3": true
+      }
+    },
+    {
+      "season": "2022-23",
+      "snapshot_key": "tg_40",
+      "monte_carlo_status": "ok",
+      "baseline_scored": true,
+      "monte_carlo_scored": true,
+      "monte_carlo": {
+        "log_loss": 2.4079456086518722,
+        "brier": 0.042142307692307694,
+        "top1": false,
+        "top3": false
+      },
+      "baseline_b": {
+        "log_loss": 2.303912912012146,
+        "brier": 0.0421519525048536,
+        "top1": false,
+        "top3": true
+      }
+    },
+    {
+      "season": "2023-24",
+      "snapshot_key": "tg_40",
+      "monte_carlo_status": "ok",
+      "baseline_scored": true,
+      "monte_carlo_scored": true,
+      "monte_carlo": {
+        "log_loss": 3.506557897319982,
+        "brier": 0.05359230769230769,
+        "top1": false,
+        "top3": false
+      },
+      "baseline_b": {
+        "log_loss": 2.5300566656645036,
+        "brier": 0.04786440229354812,
+        "top1": false,
+        "top3": false
+      }
+    },
+    {
+      "season": "2024-25",
+      "snapshot_key": "tg_40",
+      "monte_carlo_status": "ok",
+      "baseline_scored": true,
+      "monte_carlo_scored": true,
+      "monte_carlo": {
+        "log_loss": 3.2188758248682006,
+        "brier": 0.06070961538461539,
+        "top1": false,
+        "top3": true
+      },
+      "baseline_b": {
+        "log_loss": 5.459145274716273,
+        "brier": 0.06956978982306122,
+        "top1": false,
+        "top3": false
+      }
+    }
+  ],
+  "demo": {
+    "season": "2024-25",
+    "as_of": "2025-01-22",
+    "snapshot_key": "tg_40",
+    "simulation_status": "ok",
+    "simulation_reason": "实验性赛季余量模拟。默认预测仍要看升格门禁。",
+    "shrinkage": {
+      "k": 2,
+      "residual_sd": 1.6157942896814343,
+      "samples": 11627,
+      "form": "games/(games+k)"
+    },
+    "candidate_note": "展示和门禁都只用得分最高的 25 人、当季赢家和其他球员。这不是「20 场后相信当季」。"
+  },
+  "live_target": "2026-27 赛程 HTTP 403；伤病 待采集 HTTP 403 https://ak-static.cms.nba.com/referee/injury/Injury-Report_2026-10-20_05PM.pdf; HTTP 404 https://www.nba.com/injury-report",
+  "disclaimer": "这是对未来媒体投票结果的估计，不是最佳球员评分，不保证准确，也不构成投注建议。",
+  "zero_filled": false,
+  "config_monte_carlo_enabled": false
+}

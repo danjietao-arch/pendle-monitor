@@ -192,3 +192,96 @@ def render_dashboard(*, rows: list[dict], queue: list[dict], job: dict | None, h
         "</body></html>",
     ]
     return "".join(parts)
+
+
+def _research_table(rows: list[dict]) -> str:
+    if not rows:
+        return "<p>待采集</p>"
+    body = []
+    for row in rows:
+        probability = "待采集" if row.get("p_award") is None else f"{float(row['p_award']) * 100:.1f}%"
+        eligibility = "" if row.get("p_eligibility") is None else f"{float(row['p_eligibility']) * 100:.1f}%"
+        reached = "" if row.get("p_games_threshold") is None else f"{float(row['p_games_threshold']) * 100:.1f}%"
+        needed = "" if row.get("games_needed") is None else str(row["games_needed"])
+        band = row.get("record_band") or ""
+        body.append(
+            "<tr>"
+            f"<td>{html.escape(str(row.get('player_name') or row['player_id']))}</td>"
+            f"<td>{html.escape(str(row.get('team_abbr') or ''))}</td>"
+            f"<td>{html.escape(probability)}</td>"
+            f"<td>{html.escape(eligibility)}</td>"
+            f"<td>{html.escape(reached)}</td>"
+            f"<td>{html.escape(needed)}</td>"
+            f"<td>{html.escape(str(band))}</td>"
+            f"<td>{html.escape('；'.join(str(part) for part in (row.get('reasons') or [])))}</td>"
+            "</tr>"
+        )
+    header = (
+        "<tr><th>球员</th><th>球队</th><th>概率</th><th>资格概率</th><th>模拟达标概率</th>"
+        "<th>还差场次</th><th>最终胜场</th><th>理由</th></tr>"
+    )
+    return "<table>" + header + "<tbody>" + "".join(body) + "</tbody></table>"
+
+
+def render_research_board(
+    *,
+    live_rows: list[dict],
+    scenario_rows: list[dict],
+    curve: list[dict],
+    data_status: str,
+    model_version: str,
+    as_of: str,
+    season: str,
+    gate: dict | None,
+    collection_note: str | None = None,
+) -> str:
+    """Personal research page. The scenario block is not the live prediction."""
+    gate = gate or {}
+    primary = gate.get("primary") or "baseline_b"
+    parts = [
+        "<!DOCTYPE html><html lang='zh-CN'><head><meta charset='utf-8'>",
+        "<title>NBA MVP 研究看板</title>",
+        "<style>body{font-family:sans-serif;margin:24px;line-height:1.45;color:#1c1917}",
+        "table{border-collapse:collapse;width:100%;margin:12px 0}td,th{border:1px solid #d6d3d1;padding:6px;text-align:left}",
+        "section[data-kind=live]{background:#f8fafc;border:1px solid #cbd5e1;padding:12px;margin:16px 0}",
+        "section[data-kind=scenario]{background:#fff7ed;border:2px dashed #ea580c;padding:12px;margin:16px 0}",
+        ".warn{background:#fef2f2;border:1px solid #fecaca;padding:12px}</style></head><body>",
+        "<h1>NBA 常规赛 MVP 研究看板</h1>",
+        f"<p class='warn'>{html.escape(DISCLAIMER)}</p>",
+        "<p>个人研究页面，不是公开站。JSON/CSV 仍是结果来源。</p>",
+        f"<p>赛季 {html.escape(season)} · as_of {html.escape(as_of)} · {html.escape(model_version)} · {html.escape(data_status)}</p>",
+        f"<p>默认预测：{html.escape(str(primary))}。{html.escape(str(gate.get('reason') or ''))}</p>",
+    ]
+    if data_status == "STALE":
+        parts.append(f"<p>STALE · 待采集。{html.escape(collection_note or '')}</p>")
+    elif collection_note:
+        parts.append(f"<p>目标赛季待采集。{html.escape(collection_note)}</p>")
+    if data_status == "STALE" and not live_rows:
+        parts.append("<section data-kind='live'><h2>真实预测</h2><p>待采集</p></section>")
+    else:
+        parts.append("<section data-kind='live'><h2>真实预测</h2>")
+        parts.append("<p>这是当前默认模型的概率，不是假设情景。</p>")
+        parts.append(_research_table(live_rows))
+        parts.append("<h3>时间线</h3>")
+        if not curve:
+            parts.append("<p>暂无曲线。空值不会连成 0。</p>")
+        else:
+            keys = [item.get("label") or "" for item in curve]
+            parts.append("<p>" + html.escape(" → ".join(str(key) for key in keys)) + "</p>")
+            for item in curve:
+                values = item.get("values") or []
+                parts.append(f"<p>{html.escape(str(item.get('player_name') or item.get('player_id')))}</p>")
+                parts.append(_svg(values, "#1d4e89"))
+        parts.append("</section>")
+    parts.append("<section data-kind='scenario'><h2>假设情景</h2>")
+    parts.append("<p>这不是真实预测。下面的蒙特卡洛和「再缺席 10 场」只用于对照。</p>")
+    if gate.get("promoted"):
+        parts.append("<p>门禁已通过，蒙特卡洛可以作为默认预测。此区块仍单独列出情景。</p>")
+    else:
+        parts.append("<p>蒙特卡洛未升格，实验分布不替代真实预测。</p>")
+    if scenario_rows:
+        parts.append(_research_table(scenario_rows))
+    else:
+        parts.append("<p>待采集</p>")
+    parts.append("</section></body></html>")
+    return "".join(parts)

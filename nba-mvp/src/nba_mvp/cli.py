@@ -150,6 +150,16 @@ def main(argv: list[str] | None = None) -> int:
     fetch.add_argument("--workers", type=int, default=8)
     replay = sub.add_parser("stage1-replay")
     replay.add_argument("--season", action="append")
+    sub.add_parser("stage2-backtest")
+    daily = sub.add_parser("stage3-daily")
+    daily.add_argument("--as-of", default=None)
+    daily.add_argument("--season", default=None)
+    daily.add_argument("--source", choices=("auto", "archive", "live"), default="auto")
+    stage4 = sub.add_parser("stage4-simulate")
+    stage4.add_argument("--draws", type=int, default=40)
+    stage4.add_argument("--seed", type=int, default=0)
+    stage4.add_argument("--demo-season", default="2024-25")
+    stage4.add_argument("--probe-live", action="store_true")
 
     args = parser.parse_args(argv)
     if args.cmd == "selftest":
@@ -202,5 +212,89 @@ def main(argv: list[str] | None = None) -> int:
             }
         )
         return 0 if result["leakage_ok"] else 1
+    if args.cmd == "stage2-backtest":
+        from nba_mvp.stage2 import run_stage2_backtest
+
+        conn = _connection(cfg)
+        try:
+            result = run_stage2_backtest(cfg, conn)
+        finally:
+            conn.close()
+        print(
+            {
+                "model_status": result["model_status"],
+                "labeled_seasons": result["labeled_season_count"],
+                "leakage_ok": result["leakage_ok"],
+                "walk_forward_reproducible": result["walk_forward_reproducible"],
+                "not_worse_than_a": result["not_worse_than_a"],
+                "shortfall": result["shortfall"],
+                "target_season_probabilities": result["target_season_probabilities"],
+                "winners": result["winners"],
+                "report": result["report_path"],
+            }
+        )
+        return 0 if result["leakage_ok"] and result["walk_forward_reproducible"] and not any(result["fabricated_player_rows"].values()) else 1
+    if args.cmd == "stage3-daily":
+        from datetime import datetime, timezone
+
+        from nba_mvp.stage3 import run_daily
+
+        as_of = args.as_of or datetime.now(timezone.utc).date().isoformat()
+        conn = _connection(cfg)
+        try:
+            result = run_daily(
+                cfg,
+                conn,
+                as_of=as_of,
+                season=args.season,
+                source=args.source,
+                probe_injuries=args.source != "archive",
+            )
+        finally:
+            conn.close()
+        print(
+            {
+                "status": result.get("status"),
+                "season": result.get("season"),
+                "as_of": result.get("as_of"),
+                "data_status": result.get("data_status"),
+                "collection_status": result.get("collection_status"),
+                "new_games": len(result.get("new_game_ids") or []),
+                "missing_games": len(result.get("missing_games") or []),
+                "infer_status": result.get("infer_status"),
+                "model_version": result.get("model_version"),
+                "injury_source_status": result.get("injury_source_status"),
+                "log": result.get("log_path"),
+                "error": result.get("error"),
+            }
+        )
+        return 0 if result.get("status") in {"success", "already_done"} else 1
+    if args.cmd == "stage4-simulate":
+        from nba_mvp.stage4 import run_stage4
+
+        conn = _connection(cfg)
+        try:
+            result = run_stage4(
+                cfg,
+                conn,
+                draws=args.draws,
+                seed=args.seed,
+                demo=args.demo_season,
+                probe_live=args.probe_live,
+            )
+        finally:
+            conn.close()
+        print(
+            {
+                "status": result.get("status"),
+                "primary": result.get("primary"),
+                "promoted": result.get("promoted"),
+                "reason": result.get("reason"),
+                "board": result.get("board"),
+                "report": result.get("report"),
+                "live_target": result.get("live_target"),
+            }
+        )
+        return 0 if result.get("status") in {"ok", "待采集"} else 1
     parser.error(f"未知命令: {args.cmd}")
     return 2

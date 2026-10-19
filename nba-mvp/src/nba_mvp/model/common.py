@@ -15,7 +15,36 @@ FEATURE_NAMES = [
     "games_played",
     "prior_pts_per_game",
     "prior_games",
+    "prior_win_pct",
 ]
+
+# Knowable before the season starts. Baseline A never sees in-season rates.
+PRESEASON_FEATURE_NAMES = (
+    "prior_pts_per_game",
+    "prior_games",
+    "prior_win_pct",
+)
+
+
+def restrict_features(rows: list[dict], allowed: tuple[str, ...] | list[str]) -> list[dict]:
+    """Copy rows so disallowed feature slots are missing, not zero."""
+    allowed_names = set(allowed)
+    restricted = []
+    for row in rows:
+        copied = dict(row)
+        player = dict(row.get("player_features") or {})
+        team = dict(row.get("team_features") or {})
+        for name in FEATURE_NAMES:
+            if name in allowed_names:
+                continue
+            player[name] = None
+            team[name] = None
+        if "games_played" not in allowed_names:
+            copied["games_played"] = None
+        copied["player_features"] = player
+        copied["team_features"] = team
+        restricted.append(copied)
+    return restricted
 
 
 def feature_vector(row: dict) -> list[float]:

@@ -1,4 +1,4 @@
-"""Stage 1 archive and offline replay for three historical MVP seasons.
+"""Archive and offline replay for historical MVP seasons.
 
 Fetch stores raw official responses under data/archive/stage1. Replay rebuilds
 game logs, votes, and as-of snapshots without contacting the network.
@@ -20,9 +20,11 @@ from nba_mvp.collect.official import (
     boxscore_url,
     extract_boxscore_game,
     parse_boxscore_players,
+    parse_mvp_results_html,
     parse_schedule,
     parse_voter_ballot_text,
     parse_voting_results_text,
+    merge_final_score,
     schedule_team_rows,
     schedule_url,
     season_start_year,
@@ -34,6 +36,29 @@ from nba_mvp.snapshot import OTHER_ID, build_season_snapshots, load_snapshot_fra
 from nba_mvp.util import DataError, isoformat, normalize_name, utcnow
 
 STAGE1_SEASONS = ("2022-23", "2023-24", "2024-25")
+# 2014-15 and earlier schedules return HTTP 403 from this environment, so the
+# labeled history that can actually be fetched starts at 2015-16.
+HISTORICAL_SEASONS = (
+    "2015-16",
+    "2016-17",
+    "2017-18",
+    "2018-19",
+    "2019-20",
+    "2020-21",
+    "2021-22",
+    "2022-23",
+    "2023-24",
+    "2024-25",
+)
+DOCUMENTED_BLOCKERS = (
+    {
+        "season": "2014-15",
+        "item": "schedule",
+        "url": "https://data.nba.com/data/10s/v2015/json/mobile_teams/nba/2014/league/00_full_schedule.json",
+        "error": "HTTP 403",
+        "note": "data.nba.com 拒绝 2014 及更早的赛程。没有赛程就不能对齐箱分，这些赛季不入库，也不补造比赛或选票。",
+    },
+)
 EXPECTED_REGULAR_SEASON_GAMES = 1230
 PAGE_HEADERS = {
     "User-Agent": (
@@ -44,6 +69,49 @@ PAGE_HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 VOTE_SOURCES = {
+    "2015-16": {
+        "page": "https://pr.nba.com/stephen-curry-2015-16-kia-nba-mvp-award-warriors/",
+        "document": "https://pr.nba.com/stephen-curry-2015-16-kia-nba-mvp-award-warriors/",
+        "kind": "html",
+        "filename": "2015-16-mvp-voting-results.html",
+    },
+    "2016-17": {
+        "page": "https://pr.nba.com/inaugural-nba-awards-winners/",
+        "document": "https://ak-static.cms.nba.com/wp-content/uploads/sites/4/2017/06/2016-17-Kia-NBA-Most-Valuable-Player-of-the-Year-Award.pdf",
+        "kind": "results",
+        "filename": "2016-17-mvp-voting-results.pdf",
+    },
+    "2017-18": {
+        "page": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2018/06/2017-18-Kia-Most-Valuable-Player-Award-Voting-Results.pdf",
+        "document": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2018/06/2017-18-Kia-Most-Valuable-Player-Award-Voting-Results.pdf",
+        "kind": "results",
+        "filename": "2017-18-mvp-voting-results.pdf",
+    },
+    "2018-19": {
+        "page": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2019/06/2018-19-NBA-Most-Valuable-Player-Award-Voting-Totals.pdf",
+        "document": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2019/06/2018-19-NBA-Most-Valuable-Player-Award-Voting-Totals.pdf",
+        "kind": "results",
+        "filename": "2018-19-mvp-voting-results.pdf",
+    },
+    "2019-20": {
+        "page": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2020/09/2019-20-Kia-NBA-Most-Valuable-Player-Voter-Selections.pdf",
+        "document": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2020/09/2019-20-Kia-NBA-Most-Valuable-Player-Voter-Selections.pdf",
+        "kind": "ballots",
+        "filename": "2019-20-mvp-voter-selections.pdf",
+        "note": "官方结果 PDF 是扫描件，文本提取没有球员行。总分由选票 PDF 按 10/7/5/3/1 汇总，不对结果图做 OCR。",
+    },
+    "2020-21": {
+        "page": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2021/06/2020-21-NBA-MVP-Voting-Results-Announcement.pdf",
+        "document": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2021/06/2020-21-NBA-MVP-Voting-Results-Announcement.pdf",
+        "kind": "results",
+        "filename": "2020-21-mvp-voting-results.pdf",
+    },
+    "2021-22": {
+        "page": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2022/05/2021-22-Kia-NBA-Most-Valuable-Player-Voting-Results.pdf",
+        "document": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2022/05/2021-22-Kia-NBA-Most-Valuable-Player-Voting-Results.pdf",
+        "kind": "results",
+        "filename": "2021-22-mvp-voting-results.pdf",
+    },
     "2022-23": {
         "page": "https://pr.nba.com/voting-results-2022-23-nba-regular-season-awards/",
         "document": "https://ak-static.cms.nba.com/wp-content/uploads/sites/46/2023/05/2022-23-Kia-NBA-Most-Valuable-Player-Voting-Results.pdf",
@@ -88,20 +156,66 @@ def _read_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def pdf_layout_text(path: Path) -> str:
-    from pypdf import PdfReader
+def iter_pdf_texts(path: Path):
+    """Yield layout text from pdftotext, then pdfminer, then pypdf.
 
-    reader = PdfReader(str(path))
-    return "\n".join((page.extract_text(extraction_mode="layout") or "") for page in reader.pages)
+    2017-18 and 2018-19 results are rotated. pypdf returns an empty string for
+    those files; pdftotext -layout and pdfminer with boxes_flow disabled do not.
+    Later extractors are only needed when an earlier one is missing or unusable.
+    """
+    import shutil
+    import subprocess
+
+    if shutil.which("pdftotext"):
+        proc = subprocess.run(
+            ["pdftotext", "-layout", "-enc", "UTF-8", str(path), "-"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if proc.returncode == 0 and proc.stdout.strip():
+            yield proc.stdout
+    try:
+        from pdfminer.high_level import extract_text
+        from pdfminer.layout import LAParams
+
+        mined = extract_text(str(path), laparams=LAParams(boxes_flow=None)) or ""
+        if mined.strip():
+            yield mined
+    except Exception:
+        pass
+    try:
+        from pypdf import PdfReader
+
+        reader = PdfReader(str(path))
+        extracted = "\n".join((page.extract_text(extraction_mode="layout") or "") for page in reader.pages)
+        if extracted.strip():
+            yield extracted
+    except Exception:
+        pass
+
+
+def pdf_layout_text(path: Path) -> str:
+    for text in iter_pdf_texts(path):
+        return text
+    raise DataError(f"无法提取 PDF 文本: {path.name}")
 
 
 def parse_vote_document(path: Path, kind: str) -> list[dict]:
-    text = pdf_layout_text(path)
-    if kind == "results":
-        return parse_voting_results_text(text)
-    if kind == "ballots":
-        return parse_voter_ballot_text(text)
-    raise DataError(f"未知投票文件类型: {kind}")
+    if kind == "html":
+        return parse_mvp_results_html(path.read_text(encoding="utf-8", errors="replace"))
+    if kind not in {"results", "ballots"}:
+        raise DataError(f"未知投票文件类型: {kind}")
+    parser = parse_voting_results_text if kind == "results" else parse_voter_ballot_text
+    last_error = None
+    for text in iter_pdf_texts(path):
+        try:
+            return parser(text)
+        except DataError as exc:
+            last_error = exc
+    if last_error is not None:
+        raise DataError(f"{path.name}: {last_error}")
+    raise DataError(f"无法提取 PDF 文本: {path.name}")
 
 
 def season_paths(root: Path, season: str) -> dict[str, Path]:
@@ -274,7 +388,13 @@ def fetch_votes(session, root: Path, season: str) -> dict:
     status, body, fetched_at = _fetch_bytes(session, spec["document"], retries=3)
     path = season_paths(root, season)["votes"]
     path.parent.mkdir(parents=True, exist_ok=True)
-    if status != 200 or not body.startswith(b"%PDF"):
+    kind = spec["kind"]
+    if status != 200 or not body:
+        raise DataError(f"投票文件下载失败: {season} HTTP {status}")
+    if kind == "html":
+        if b"<html" not in body[:800].lower() and b"<table" not in body[:4000].lower():
+            raise DataError(f"投票页面不是 HTML: {season} HTTP {status}")
+    elif not body.startswith(b"%PDF"):
         raise DataError(f"投票文件不是 PDF: {season} HTTP {status}")
     path.write_bytes(body)
     image_meta = None
@@ -293,17 +413,38 @@ def fetch_votes(session, root: Path, season: str) -> dict:
             }
         else:
             image_meta = {"url": spec["image"], "status": image_status, "parsed": False, "error": "fetch_failed"}
-    rows = parse_vote_document(path, spec["kind"])
+    try:
+        rows = parse_vote_document(path, kind)
+    except DataError as exc:
+        meta = {
+            "season": season,
+            "url": spec["document"],
+            "page": spec["page"],
+            "kind": kind,
+            "status": status,
+            "fetched_at": fetched_at,
+            "sha256": hashlib.sha256(body).hexdigest(),
+            "rows": 0,
+            "winner": None,
+            "parsed": False,
+            "error": str(exc),
+            "note": spec.get("note"),
+            "image": image_meta,
+        }
+        _write_json(season_paths(root, season)["vote_meta"], meta)
+        return meta
     meta = {
         "season": season,
         "url": spec["document"],
         "page": spec["page"],
-        "kind": spec["kind"],
+        "kind": kind,
         "status": status,
         "fetched_at": fetched_at,
         "sha256": hashlib.sha256(body).hexdigest(),
         "rows": len(rows),
         "winner": next(row["player_name"] for row in rows if row["is_winner"]),
+        "parsed": True,
+        "note": spec.get("note"),
         "image": image_meta,
     }
     _write_json(season_paths(root, season)["vote_meta"], meta)
@@ -333,26 +474,42 @@ def fetch_stage1(cfg: dict, seasons: list[str] | None = None, workers: int = 8) 
     stats_probe = probe_stats_api(session)
     summary = {"stats_api": stats_probe, "seasons": {}}
     for season in chosen:
-        print(f"schedule {season}", flush=True)
-        schedule = fetch_schedule(session, root, season)
-        games = parse_schedule(_read_json(season_paths(root, season)["schedule"])["body"])
-        print(f"boxscores {season} {len(games)}", flush=True)
-        boxes = fetch_boxscores(root, season, games, workers=workers)
-        print(f"votes {season}", flush=True)
-        votes = fetch_votes(session, root, season)
-        summary["seasons"][season] = {"schedule": schedule, "boxscores": boxes, "votes": votes}
-    _write_json(root / "manifest.json", _manifest(root, chosen, stats_probe))
+        try:
+            print(f"schedule {season}", flush=True)
+            schedule = fetch_schedule(session, root, season)
+            games = parse_schedule(_read_json(season_paths(root, season)["schedule"])["body"])
+            print(f"boxscores {season} {len(games)}", flush=True)
+            boxes = fetch_boxscores(root, season, games, workers=workers)
+            print(f"votes {season}", flush=True)
+            votes = fetch_votes(session, root, season)
+            summary["seasons"][season] = {"schedule": schedule, "boxscores": boxes, "votes": votes}
+        except DataError as exc:
+            print(f"{season} failed: {exc}", flush=True)
+            summary["seasons"][season] = {"error": str(exc)}
+    present = _archived_seasons(root)
+    _write_json(root / "manifest.json", _manifest(root, present, stats_probe))
     return summary
+
+
+def _archived_seasons(root: Path) -> list[str]:
+    found = []
+    for season in HISTORICAL_SEASONS:
+        schedule = root / "schedules" / f"{season}.json"
+        if schedule.exists():
+            found.append(season)
+    return found
 
 
 def _manifest(root: Path, seasons: list[str], stats_probe: dict) -> dict:
     document = {
-        "stage": 1,
+        "stage": 2,
         "created_at": isoformat(utcnow()),
         "stats_api": stats_probe,
+        "blockers": list(DOCUMENTED_BLOCKERS),
         "note": (
             "stats.nba.com/stats 在此环境读超时。逐场来自 data.nba.com 官方赛程和 "
-            "www.nba.com 箱分页内嵌的官方 game 对象。投票来自 pr.nba.com 链出的 NBA Communications PDF。"
+            "www.nba.com 箱分页内嵌的官方 game 对象。投票来自 pr.nba.com 链出的 NBA Communications 文件。"
+            "2014-15 及更早赛程返回 HTTP 403，没有补造。"
         ),
         "seasons": {},
     }
@@ -420,9 +577,17 @@ def resolve_vote_player_id(player_name: str, names: dict[str, list[str]]) -> str
         if extra and all(part in GENERATIONAL_SUFFIXES for part in extra):
             matches.extend(ids)
     distinct = sorted(set(matches))
-    if len(distinct) != 1:
-        raise DataError(f"未匹配到官方 player_id: {player_name}")
-    return distinct[0]
+    if len(distinct) == 1:
+        return distinct[0]
+    folded = key.replace(".", "")
+    punct = []
+    for name, ids in names.items():
+        if name.replace(".", "") == folded:
+            punct.extend(ids)
+    punct = sorted(set(punct))
+    if len(punct) == 1:
+        return punct[0]
+    raise DataError(f"未匹配到官方 player_id: {player_name}")
 
 
 def load_season_archive(root: Path, season: str) -> dict:
@@ -433,24 +598,37 @@ def load_season_archive(root: Path, season: str) -> dict:
     if not paths["boxscores"].exists():
         raise DataError(f"缺少箱分存档: {season}")
     vote_meta = _read_json(paths["vote_meta"])
+    try:
+        vote_rows = parse_vote_document(paths["votes"], vote_meta["kind"])
+        vote_error = None
+    except DataError as exc:
+        vote_rows = []
+        vote_error = str(exc)
     return {
         "schedule_record": schedule_record,
         "schedule_games": parse_schedule(schedule_record["body"]),
         "box_records": list(iter_boxscore_records(paths["boxscores"])),
         "vote_meta": vote_meta,
-        "vote_rows": parse_vote_document(paths["votes"], vote_meta["kind"]),
+        "vote_rows": vote_rows,
+        "vote_error": vote_error,
     }
 
 
 def replay_season(conn, cfg: dict, season: str, archive: dict | None = None) -> dict:
     root = archive_root(cfg)
     loaded = archive or load_season_archive(root, season)
-    schedule_games = {game["game_id"]: game for game in loaded["schedule_games"]}
+    box_by_id = {
+        str(record.get("game_id") or ""): record.get("body")
+        for record in loaded["box_records"]
+        if record.get("body")
+    }
+    schedule_list = [merge_final_score(game, box_by_id.get(game["game_id"])) for game in loaded["schedule_games"]]
+    schedule_games = {game["game_id"]: game for game in schedule_list}
     schedule_meta = {
         "url": loaded["schedule_record"].get("url"),
         "fetched_at": loaded["schedule_record"].get("fetched_at"),
     }
-    team_rows = schedule_team_rows(loaded["schedule_games"])
+    team_rows = schedule_team_rows(schedule_list)
     player_groups: dict[tuple[str, str], list[dict]] = {}
     unparsed = []
     failed_games = []
@@ -483,7 +661,10 @@ def replay_season(conn, cfg: dict, season: str, archive: dict | None = None) -> 
             f"team_games={len(team_rows)} player_files={len(player_groups)} failed={len(failed_games)} unparsed={len(unparsed)}",
             schedule_meta.get("fetched_at") or isoformat(utcnow()),
         )
+    vote_error = loaded.get("vote_error")
     try:
+        if vote_error:
+            raise DataError(vote_error)
         names = _players_for_season(conn, season)
         vote_rows = []
         for row in loaded["vote_rows"]:
@@ -502,6 +683,8 @@ def replay_season(conn, cfg: dict, season: str, archive: dict | None = None) -> 
         vote_rows = []
         vote_status = "parse_failed"
         vote_error = str(exc)
+        with transaction(conn):
+            conn.execute("DELETE FROM vote_totals WHERE season = ?", (season,))
         audit(conn, "vote_fetch_failed", season, str(exc), loaded["vote_meta"].get("fetched_at") or isoformat(utcnow()))
     snapshots = build_season_snapshots(conn, cfg, season, season_start=season_start)
     frames = {

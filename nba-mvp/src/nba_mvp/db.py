@@ -199,6 +199,37 @@ CREATE TABLE IF NOT EXISTS hourly_snapshots (
   CHECK (p_market_mid IS NULL OR (p_market_mid >= 0 AND p_market_mid <= 1))
 );
 
+CREATE TABLE IF NOT EXISTS injury_reports (
+  season TEXT NOT NULL,
+  as_of TEXT NOT NULL,
+  player_id TEXT NOT NULL,
+  status TEXT NOT NULL,
+  confidence TEXT NOT NULL,
+  source_url TEXT,
+  note TEXT,
+  fetched_at TEXT,
+  PRIMARY KEY (season, as_of, player_id)
+);
+
+CREATE TABLE IF NOT EXISTS weekly_snapshots (
+  season TEXT NOT NULL,
+  as_of TEXT NOT NULL,
+  player_id TEXT NOT NULL,
+  player_name TEXT,
+  team_abbr TEXT,
+  p_award REAL,
+  delta_pp_vs_last_week REAL,
+  p_eligibility REAL,
+  projected_wins_low REAL,
+  projected_wins_high REAL,
+  model_version TEXT,
+  reasons TEXT,
+  created_at TEXT,
+  PRIMARY KEY (season, as_of, player_id),
+  CHECK (p_award IS NULL OR (p_award >= 0 AND p_award <= 1)),
+  CHECK (p_eligibility IS NULL OR (p_eligibility >= 0 AND p_eligibility <= 1))
+);
+
 CREATE TABLE IF NOT EXISTS job_status (
   job_id TEXT PRIMARY KEY,
   as_of_hour TEXT,

@@ -18,6 +18,28 @@ RESULTS_LINE = re.compile(
     r"^(?P<name>.+?),\s+(?P<team>.+?)\s+(?P<first>\d+)\s+(?P<second>\d+)\s+(?P<third>\d+)\s+"
     r"(?P<fourth>\d+)\s+(?P<fifth>\d+)\s+(?P<total>\d+)\s*$"
 )
+LAST_FIRST_LINE = re.compile(
+    r"^(?P<last>[^,]+),\s+(?P<first>[^(]+?)\s*\([^)]*\)\s+(?P<first_votes>\d+)\s+(?P<second>\d+)\s+"
+    r"(?P<third>\d+)\s+(?P<fourth>\d+)\s+(?P<fifth>\d+)\s+(?P<total>[\d,]+)\s*$"
+)
+FIRST_LAST_LINE = re.compile(
+    r"^(?P<name>.+?)\s*\([^)]*\)\s+(?P<first>\d+)\s+(?P<second>\d+)\s+(?P<third>\d+)\s+"
+    r"(?P<fourth>\d+)\s+(?P<fifth>\d+)\s+(?P<total>[\d,]+)\s*$"
+)
+LAST_FIRST_PICK = re.compile(r"^([^,]+),\s+(.+?)\s*\([^)]*\)\s*$")
+# A ballot pick is "Last, First (ABC)". The last-name group cannot swallow the
+# voter's affiliation, which is what a loose "{2,40} chars then a parenthesis"
+# pattern did on lines such as "Albert, Marv  Turner  Antetokounmpo, Giannis (MIL)".
+PLAYER_TOKEN = re.compile(
+    r"(?<![A-Za-z'’])"
+    r"([A-Z][A-Za-z'’.\-]{0,40}(?: [A-Z][A-Za-z'’.\-]{0,40})?)"
+    r", "
+    r"([A-Z][A-Za-z'’.\-]{0,40}(?: [A-Z][A-Za-z'’.\-]{0,40})?)"
+    r" ?\(([A-Za-z.]{1,8})\)"
+)
+CELL_RE = re.compile(r"<t[dh][^>]*>(.*?)</t[dh]>", re.I | re.S)
+ROW_RE = re.compile(r"<tr[^>]*>(.*?)</tr>", re.I | re.S)
+TAG_RE = re.compile(r"<[^>]+>")
 NEXT_DATA = re.compile(
     r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>',
     re.S,
@@ -83,26 +105,32 @@ def parse_schedule(payload) -> list[dict]:
             if game_id in seen:
                 raise DataError(f"赛程重复: {game_id}")
             seen.add(game_id)
-            if game.get("stt") != "Final":
-                continue
+            schedule_final = game.get("stt") == "Final"
             game_date = str(game.get("gdte") or "")
             if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", game_date):
                 raise DataError(f"赛程日期无法解析: {game_id}")
             home = game.get("h") or {}
             away = game.get("v") or {}
-            home_points = _score(home.get("s"))
-            away_points = _score(away.get("s"))
-            if home_points is None or away_points is None or home_points == away_points:
-                home_win = away_win = None
+            if schedule_final:
+                home_points = _score(home.get("s"))
+                away_points = _score(away.get("s"))
+                if home_points is None or away_points is None or home_points == away_points:
+                    home_win = away_win = None
+                else:
+                    home_win = 1 if home_points > away_points else 0
+                    away_win = 1 - home_win
             else:
-                home_win = 1 if home_points > away_points else 0
-                away_win = 1 - home_win
+                # An in-progress schedule status is not a final score. Leave it empty.
+                home_points = away_points = None
+                home_win = away_win = None
             if not home.get("tid") or not away.get("tid"):
                 raise DataError(f"赛程缺少球队: {game_id}")
             parsed.append(
                 {
                     "game_id": game_id,
                     "game_date": game_date,
+                    "schedule_final": schedule_final,
+                    "schedule_status": game.get("stt"),
                     "home": _team_side(home, home_points, away_points, home_win, away),
                     "away": _team_side(away, away_points, home_points, away_win, home),
                 }
@@ -121,6 +149,42 @@ def _team_side(side: dict, points_for, points_against, win, opponent: dict) -> d
         "win": win,
         "opponent": None if opponent.get("ta") in (None, "") else str(opponent.get("ta")),
     }
+
+
+def merge_final_score(schedule_game: dict, box_game: dict | None) -> dict:
+    """Use the official box score when the schedule feed never flipped to Final.
+
+    Missing or tied scores stay missing. They are not stored as a loss.
+    """
+    if schedule_game.get("schedule_final", True) or not box_game:
+        return schedule_game
+    status = box_game.get("gameStatus")
+    if status not in (3, "3"):
+        return schedule_game
+    home = box_game.get("homeTeam") or {}
+    away = box_game.get("awayTeam") or {}
+    if str(home.get("teamId")) != str(schedule_game["home"]["team_id"]):
+        return schedule_game
+    if str(away.get("teamId")) != str(schedule_game["away"]["team_id"]):
+        return schedule_game
+    home_points = _score(home.get("score"))
+    away_points = _score(away.get("score"))
+    copied = {
+        **schedule_game,
+        "home": dict(schedule_game["home"]),
+        "away": dict(schedule_game["away"]),
+        "score_source": "boxscore",
+    }
+    if home_points is None or away_points is None or home_points == away_points:
+        copied["score_source"] = "missing"
+        return copied
+    copied["home"]["points_for"] = home_points
+    copied["home"]["points_against"] = away_points
+    copied["home"]["win"] = 1 if home_points > away_points else 0
+    copied["away"]["points_for"] = away_points
+    copied["away"]["points_against"] = home_points
+    copied["away"]["win"] = 1 - copied["home"]["win"]
+    return copied
 
 
 def schedule_team_rows(games: list[dict]) -> list[dict]:
@@ -304,33 +368,117 @@ def _weighted_total(places: list[int]) -> int:
     return sum(count * weight for count, weight in zip(places, PLACE_POINTS))
 
 
+def _clean_vote_line(raw_line: str) -> str:
+    line = raw_line.replace("\u00a0", " ").replace("\u2011", "-").replace("\u2010", "-")
+    return re.sub(r"\s+", " ", line).strip()
+
+
+def _append_vote_row(rows: list[dict], seen: set[str], name: str, places: list[int], total: int) -> None:
+    if _weighted_total(places) != total:
+        raise DataError(f"投票分与名次票不一致: {name}")
+    key = name.casefold()
+    if key in seen:
+        raise DataError(f"投票结果出现重复姓名: {name}")
+    seen.add(key)
+    rows.append(
+        {
+            "player_name": name,
+            "vote_points": total,
+            "first_place_votes": places[0],
+            "place_votes": places,
+        }
+    )
+
+
 def parse_voting_results_text(text: str) -> list[dict]:
     rows = []
     seen = set()
     for raw_line in (text or "").splitlines():
-        line = re.sub(r"\s+", " ", raw_line).strip()
-        match = RESULTS_LINE.fullmatch(line)
-        if not match:
+        line = _clean_vote_line(raw_line)
+        last_first = LAST_FIRST_LINE.fullmatch(line)
+        if last_first:
+            name = f"{last_first.group('first').strip()} {last_first.group('last').strip()}"
+            places = [int(last_first.group(name_key)) for name_key in ("first_votes", "second", "third", "fourth", "fifth")]
+            _append_vote_row(rows, seen, name, places, int(last_first.group("total").replace(",", "")))
             continue
-        places = [int(match.group(name)) for name in ("first", "second", "third", "fourth", "fifth")]
-        total = int(match.group("total"))
-        if _weighted_total(places) != total:
-            raise DataError(f"投票分与名次票不一致: {match.group('name')}")
-        name = match.group("name").strip()
-        if name.casefold() in seen:
-            raise DataError(f"投票结果出现重复姓名: {name}")
-        seen.add(name.casefold())
-        rows.append(
-            {
-                "player_name": name,
-                "vote_points": total,
-                "first_place_votes": places[0],
-                "place_votes": places,
-            }
-        )
+        first_last = FIRST_LAST_LINE.fullmatch(line)
+        if first_last and "," not in first_last.group("name"):
+            places = [int(first_last.group(name_key)) for name_key in ("first", "second", "third", "fourth", "fifth")]
+            _append_vote_row(rows, seen, first_last.group("name").strip(), places, int(first_last.group("total").replace(",", "")))
+            continue
+        match = RESULTS_LINE.fullmatch(line)
+        if match:
+            places = [int(match.group(name)) for name in ("first", "second", "third", "fourth", "fifth")]
+            _append_vote_row(rows, seen, match.group("name").strip(), places, int(match.group("total").replace(",", "")))
     if not rows:
         raise DataError("投票结果 PDF 没有可解析的球员行")
     return _with_winner(rows)
+
+
+def _html_cell(cell: str) -> str:
+    text = cell.replace("&#8212;", "—").replace("&mdash;", "—").replace("&#8211;", "—")
+    text = TAG_RE.sub(" ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _vote_cell_number(cell: str) -> int | None:
+    if cell in {"—", "-", "–", "‐"}:
+        return 0
+    compact = cell.replace(",", "")
+    if re.fullmatch(r"\d+", compact):
+        return int(compact)
+    return None
+
+
+def parse_mvp_results_html(html: str) -> list[dict]:
+    """Parse an official results table. Dashes are published zeros, not guesses."""
+    rows = []
+    seen = set()
+    for row_html in ROW_RE.findall(html or ""):
+        cells = [_html_cell(cell) for cell in CELL_RE.findall(row_html)]
+        if len(cells) < 7:
+            continue
+        if cells[0].casefold() in {"player", "player, team"}:
+            continue
+        numbers = [_vote_cell_number(cell) for cell in cells[-6:]]
+        if any(number is None for number in numbers):
+            continue
+        name = cells[0].strip()
+        if not name or not re.search(r"[A-Za-z]", name):
+            continue
+        places = numbers[:5]
+        _append_vote_row(rows, seen, name, places, numbers[5])
+    if not rows:
+        raise DataError("投票 HTML 没有可解析的结果表")
+    return _with_winner(rows)
+
+
+def _ballot_name(part: str) -> str | None:
+    last_first = LAST_FIRST_PICK.fullmatch(part.strip())
+    if last_first:
+        return f"{last_first.group(2).strip()} {last_first.group(1).strip()}"
+    if "," in part:
+        name = part.split(",", 1)[0].strip()
+        return name or None
+    return None
+
+
+def _ballot_picks(line: str) -> list[str] | None:
+    parts = [part.strip() for part in re.split(r"\s{2,}", line.strip()) if part.strip()]
+    if len(parts) >= 6 and all("," in part for part in parts[-5:]):
+        if parts[0].lower().startswith("voter"):
+            return None
+        picks = []
+        for part in parts[-5:]:
+            name = _ballot_name(part)
+            if not name:
+                return None
+            picks.append(name)
+        return picks
+    found = [f"{match.group(2).strip()} {match.group(1).strip()}" for match in PLAYER_TOKEN.finditer(line)]
+    if len(found) == 5:
+        return found
+    return None
 
 
 def parse_voter_ballot_text(text: str) -> list[dict]:
@@ -339,17 +487,9 @@ def parse_voter_ballot_text(text: str) -> list[dict]:
     display: dict[str, str] = {}
     ballots = 0
     for raw_line in (text or "").splitlines():
-        parts = [part.strip() for part in re.split(r"\s{2,}", raw_line.strip()) if part.strip()]
-        if len(parts) < 6 or not all("," in part for part in parts[-5:]):
+        picks = _ballot_picks(raw_line)
+        if not picks:
             continue
-        if parts[0].lower().startswith("voter"):
-            continue
-        picks = []
-        for part in parts[-5:]:
-            name = part.split(",", 1)[0].strip()
-            if not name:
-                raise DataError("选票姓名为空")
-            picks.append(name)
         if len(set(name.casefold() for name in picks)) != 5:
             raise DataError(f"同一张选票出现重复球员: {picks}")
         ballots += 1
