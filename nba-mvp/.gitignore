@@ -1,0 +1,8 @@
+.env
+data/raw/
+data/archive/stage1/boxscores/parts/
+data/db/
+data/models/
+__pycache__/
+*.pyc
+.pytest_cache/

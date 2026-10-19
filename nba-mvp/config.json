@@ -1,0 +1,40 @@
+{
+  "target_season": "2026-27",
+  "award": "regular_season_mvp",
+  "season_start": "2026-10-20",
+  "snapshot_team_games": [0, 10, 20, 40, 60, "end"],
+  "min_historical_seasons": 10,
+  "candidate_min_minutes": 200,
+  "monte_carlo": {
+    "enabled": false,
+    "simulations": 2000
+  },
+  "polymarket": {
+    "enabled": true,
+    "use_in_training": false,
+    "gamma_base": "https://gamma-api.polymarket.com",
+    "clob_base": "https://clob.polymarket.com",
+    "search_queries": [
+      "2026-27 NBA Regular Season MVP",
+      "2026-27 Kia NBA MVP"
+    ],
+    "stale_minutes": 90,
+    "alert_abs_delta_pp": 5,
+    "alert_max_spread_pp": 3,
+    "alert_consecutive": 2
+  },
+  "nba": {
+    "stats_base": "https://stats.nba.com/stats",
+    "referer": "https://www.nba.com/"
+  },
+  "paths": {
+    "db": "data/db/mvp.sqlite",
+    "raw": "data/raw",
+    "registry": "data/registry/market_registry.json",
+    "rules": "data/rules/eligibility_rules.json",
+    "reports": "data/reports",
+    "models": "data/models",
+    "fixtures": "data/fixtures",
+    "archive": "data/archive/stage1"
+  }
+}
