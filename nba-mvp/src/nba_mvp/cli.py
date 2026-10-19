@@ -150,6 +150,7 @@ def main(argv: list[str] | None = None) -> int:
     fetch.add_argument("--workers", type=int, default=8)
     replay = sub.add_parser("stage1-replay")
     replay.add_argument("--season", action="append")
+    sub.add_parser("stage2-backtest")
 
     args = parser.parse_args(argv)
     if args.cmd == "selftest":
@@ -202,5 +203,27 @@ def main(argv: list[str] | None = None) -> int:
             }
         )
         return 0 if result["leakage_ok"] else 1
+    if args.cmd == "stage2-backtest":
+        from nba_mvp.stage2 import run_stage2_backtest
+
+        conn = _connection(cfg)
+        try:
+            result = run_stage2_backtest(cfg, conn)
+        finally:
+            conn.close()
+        print(
+            {
+                "model_status": result["model_status"],
+                "labeled_seasons": result["labeled_season_count"],
+                "leakage_ok": result["leakage_ok"],
+                "walk_forward_reproducible": result["walk_forward_reproducible"],
+                "not_worse_than_a": result["not_worse_than_a"],
+                "shortfall": result["shortfall"],
+                "target_season_probabilities": result["target_season_probabilities"],
+                "winners": result["winners"],
+                "report": result["report_path"],
+            }
+        )
+        return 0 if result["leakage_ok"] and result["walk_forward_reproducible"] and not any(result["fabricated_player_rows"].values()) else 1
     parser.error(f"未知命令: {args.cmd}")
     return 2

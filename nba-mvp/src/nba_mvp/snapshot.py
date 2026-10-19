@@ -115,6 +115,25 @@ def _filter_games(games: list[dict], player_id: str, as_of: str | None) -> list[
     return kept
 
 
+def _prior_team_win_pct(prior_player_games: list[dict], prior_team_games: list[dict], snapshot_date: str | None):
+    """Previous season's final win rate for the team this player finished on.
+
+    Missing history stays missing. It is not written as 0.
+    """
+    team_id, _abbr = _latest_team(prior_player_games)
+    if not team_id or not snapshot_date:
+        return None
+    visible = [
+        game
+        for game in prior_team_games
+        if str(game.get("team_id")) == str(team_id) and game.get("game_date") and game["game_date"] <= snapshot_date
+    ]
+    summary = aggregate_team_games(visible)
+    if not summary.get("team_games"):
+        return None
+    return summary.get("win_pct")
+
+
 def _latest_team(games: list[dict]) -> tuple[str | None, str | None]:
     if not games:
         return None, None
@@ -178,11 +197,13 @@ def build_snapshot_rows(
     injury_status: dict | None = None,
     extra_player_ids: list[str] | None = None,
     source_timestamp: str | None = None,
+    prior_team_games: list[dict] | None = None,
 ) -> list[dict]:
     if snapshot_key == "preseason" and not season_start:
         raise ValueError("赛前快照需要 season_start")
     official_eligible = official_eligible or {}
     injury_status = injury_status or {}
+    prior_team_games = prior_team_games or []
     games_by_player: dict[str, list[dict]] = {}
     for game in games:
         games_by_player.setdefault(str(game["player_id"]), []).append(game)
@@ -239,6 +260,7 @@ def build_snapshot_rows(
             player_features["prior_pts_per_game"] = None
             player_features["prior_games"] = None
             team_features = aggregate_team_games([])
+            team_features["prior_win_pct"] = None
             team_id = None
             team_abbr = None
             games_played = 0
@@ -260,8 +282,12 @@ def build_snapshot_rows(
                 team_id = cutoff_team
             player_features = aggregate_player_games(visible)
             prior_features = aggregate_player_games(prior_visible)
-            player_features["prior_pts_per_game"] = prior_features.get("pts_per_game")
-            player_features["prior_games"] = prior_features.get("games_played")
+            if prior_visible:
+                player_features["prior_pts_per_game"] = prior_features.get("pts_per_game")
+                player_features["prior_games"] = prior_features.get("games_played")
+            else:
+                player_features["prior_pts_per_game"] = None
+                player_features["prior_games"] = None
             team_visible = [
                 game
                 for game in team_games
@@ -270,6 +296,7 @@ def build_snapshot_rows(
             if snapshot_key == "preseason":
                 team_visible = []
             team_features = aggregate_team_games(team_visible)
+            team_features["prior_win_pct"] = _prior_team_win_pct(prior_visible, prior_team_games, snapshot_date)
             _team_id, team_abbr = _latest_team(visible or prior_visible)
             team_abbr = team_abbr or profile.get("team_abbr")
             games_played = player_features["games_played"]
@@ -395,6 +422,7 @@ def build_season_snapshots(conn, cfg: dict, season: str, *, season_start: str | 
         start = min(game["game_date"] for game in games)
     prior_label = previous_season_label(season)
     prior_games = _load_games(conn, prior_label) if prior_label else []
+    prior_team_games = _load_team_games(conn, prior_label) if prior_label else []
     from nba_mvp.eligibility import load_rules
     from nba_mvp.config import project_path
 
@@ -410,6 +438,7 @@ def build_season_snapshots(conn, cfg: dict, season: str, *, season_start: str | 
             games=games,
             team_games=_load_team_games(conn, season),
             prior_games=prior_games,
+            prior_team_games=prior_team_games,
             votes=votes,
             players=players,
             min_minutes=float(cfg["candidate_min_minutes"]),

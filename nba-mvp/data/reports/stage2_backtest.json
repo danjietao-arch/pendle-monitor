@@ -1,0 +1,1218 @@
+{
+  "stage": 2,
+  "labeled_seasons": [
+    "2015-16",
+    "2016-17",
+    "2017-18",
+    "2018-19",
+    "2019-20",
+    "2020-21",
+    "2021-22",
+    "2022-23",
+    "2023-24",
+    "2024-25"
+  ],
+  "labeled_season_count": 10,
+  "min_historical_seasons": 10,
+  "missing_archives": [],
+  "unlabeled": [],
+  "schedule_games": {
+    "2015-16": 1230,
+    "2016-17": 1230,
+    "2017-18": 1230,
+    "2018-19": 1230,
+    "2019-20": 1059,
+    "2020-21": 1080,
+    "2021-22": 1230,
+    "2022-23": 1230,
+    "2023-24": 1230,
+    "2024-25": 1230
+  },
+  "failed_games": {
+    "2015-16": [],
+    "2016-17": [],
+    "2017-18": [],
+    "2018-19": [],
+    "2019-20": [],
+    "2020-21": [],
+    "2021-22": [],
+    "2022-23": [],
+    "2023-24": [],
+    "2024-25": [
+      "0022401084"
+    ]
+  },
+  "fabricated_player_rows": {
+    "2015-16": [],
+    "2016-17": [],
+    "2017-18": [],
+    "2018-19": [],
+    "2019-20": [],
+    "2020-21": [],
+    "2021-22": [],
+    "2022-23": [],
+    "2023-24": [],
+    "2024-25": []
+  },
+  "winners": {
+    "2015-16": "Stephen Curry",
+    "2016-17": "Russell Westbrook",
+    "2017-18": "James Harden",
+    "2018-19": "Giannis Antetokounmpo",
+    "2019-20": "Giannis Antetokounmpo",
+    "2020-21": "Nikola Jokić",
+    "2021-22": "Nikola Jokić",
+    "2022-23": "Joel Embiid",
+    "2023-24": "Nikola Jokić",
+    "2024-25": "Shai Gilgeous-Alexander"
+  },
+  "leakage_ok": true,
+  "leakage_problems": {},
+  "blockers": [
+    {
+      "season": "2014-15",
+      "item": "schedule",
+      "url": "https://data.nba.com/data/10s/v2015/json/mobile_teams/nba/2014/league/00_full_schedule.json",
+      "error": "HTTP 403",
+      "note": "data.nba.com 拒绝 2014 及更早的赛程。没有赛程就不能对齐箱分，这些赛季不入库，也不补造比赛或选票。"
+    }
+  ],
+  "walk_forward": {
+    "by_snapshot": {
+      "end": {
+        "folds": 9,
+        "paired_folds": 8,
+        "log_loss_b": 2.2217542105490895,
+        "log_loss_a": 3.560013338310414,
+        "brier_b": 0.002052556355558461,
+        "brier_a": 0.002079747682103068,
+        "top1_b": 0.3333333333333333,
+        "top3_b": 0.7777777777777778,
+        "top1_a": 0.0,
+        "top3_a": 0.375
+      },
+      "preseason": {
+        "folds": 9,
+        "paired_folds": 8,
+        "log_loss_b": 3.550539956316382,
+        "log_loss_a": 3.5505402150995438,
+        "brier_b": 0.0022490949017779475,
+        "brier_a": 0.0022490949331145232,
+        "top1_b": 0.0,
+        "top3_b": 0.3333333333333333,
+        "top1_a": 0.0,
+        "top3_a": 0.375
+      },
+      "tg_10": {
+        "folds": 9,
+        "paired_folds": 8,
+        "log_loss_b": 3.0219879032372305,
+        "log_loss_a": 3.4996889244191305,
+        "brier_b": 0.0028164301434016738,
+        "brier_a": 0.002713217714607556,
+        "top1_b": 0.3333333333333333,
+        "top3_b": 0.5555555555555556,
+        "top1_a": 0.0,
+        "top3_a": 0.375
+      },
+      "tg_20": {
+        "folds": 9,
+        "paired_folds": 8,
+        "log_loss_b": 2.3444309712703095,
+        "log_loss_a": 3.5237828425774094,
+        "brier_b": 0.0022496826501488152,
+        "brier_a": 0.0024996447902656286,
+        "top1_b": 0.5555555555555556,
+        "top3_b": 0.7777777777777778,
+        "top1_a": 0.0,
+        "top3_a": 0.375
+      },
+      "tg_40": {
+        "folds": 9,
+        "paired_folds": 8,
+        "log_loss_b": 2.5027198624964373,
+        "log_loss_a": 3.5433242856442257,
+        "brier_b": 0.0024152323092915258,
+        "brier_a": 0.0023127944011928484,
+        "top1_b": 0.4444444444444444,
+        "top3_b": 0.5555555555555556,
+        "top1_a": 0.0,
+        "top3_a": 0.375
+      },
+      "tg_60": {
+        "folds": 9,
+        "paired_folds": 8,
+        "log_loss_b": 2.2420120659904574,
+        "log_loss_a": 3.5509328476354156,
+        "brier_b": 0.0020917442559495033,
+        "brier_a": 0.0021981354026473117,
+        "top1_b": 0.4444444444444444,
+        "top3_b": 0.7777777777777778,
+        "top1_a": 0.0,
+        "top3_a": 0.375
+      }
+    },
+    "folds": [
+      {
+        "season": "2016-17",
+        "snapshot_key": "end",
+        "baseline_b": {
+          "log_loss": 1.0792133715703043,
+          "brier": 0.0010950392345776157,
+          "top1": true,
+          "top3": true
+        }
+      },
+      {
+        "season": "2017-18",
+        "snapshot_key": "end",
+        "baseline_b": {
+          "log_loss": 1.4563892138125123,
+          "brier": 0.0015289332733818544,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.6862132901704094,
+          "brier": 0.002117394353549122,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2018-19",
+        "snapshot_key": "end",
+        "baseline_b": {
+          "log_loss": 5.041933262106176,
+          "brier": 0.004134670702221416,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 3.5244125245018085,
+          "brier": 0.002113666038840284,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2019-20",
+        "snapshot_key": "end",
+        "baseline_b": {
+          "log_loss": 2.4103028574877445,
+          "brier": 0.00222944436179466,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 3.5336581425265736,
+          "brier": 0.0023088511325984632,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2020-21",
+        "snapshot_key": "end",
+        "baseline_b": {
+          "log_loss": 1.0072754517323432,
+          "brier": 0.0009269966079427903,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 4.776687688526741,
+          "brier": 0.0022043814842415497,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2021-22",
+        "snapshot_key": "end",
+        "baseline_b": {
+          "log_loss": 0.6369790540867255,
+          "brier": 0.0005421010295234112,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.116241383697346,
+          "brier": 0.0019294270405567136,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2022-23",
+        "snapshot_key": "end",
+        "baseline_b": {
+          "log_loss": 1.6921930852238163,
+          "brier": 0.001703954469455767,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 2.769305816289472,
+          "brier": 0.00194951704755914,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2023-24",
+        "snapshot_key": "end",
+        "baseline_b": {
+          "log_loss": 1.7072902814356397,
+          "brier": 0.00192933037488122,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 4.37477273156991,
+          "brier": 0.002161910668536003,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2024-25",
+        "snapshot_key": "end",
+        "baseline_b": {
+          "log_loss": 3.821670478507759,
+          "brier": 0.003425020025266569,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 2.6988151292010523,
+          "brier": 0.0018528336909432676,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2016-17",
+        "snapshot_key": "preseason",
+        "baseline_b": {
+          "log_loss": 6.021023349349527,
+          "brier": 0.0024212932415873314,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2017-18",
+        "snapshot_key": "preseason",
+        "baseline_b": {
+          "log_loss": 3.6222923425503524,
+          "brier": 0.002339830224942357,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.622292342646448,
+          "brier": 0.0023398302249526223,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2018-19",
+        "snapshot_key": "preseason",
+        "baseline_b": {
+          "log_loss": 3.498171291560796,
+          "brier": 0.0022620163867622394,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 3.4981712917229033,
+          "brier": 0.0022620163867769676,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2019-20",
+        "snapshot_key": "preseason",
+        "baseline_b": {
+          "log_loss": 3.5645315373807787,
+          "brier": 0.002386213742087798,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 3.5645314871606977,
+          "brier": 0.00238621379552162,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2020-21",
+        "snapshot_key": "preseason",
+        "baseline_b": {
+          "log_loss": 4.755162611162306,
+          "brier": 0.002466365921277339,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 4.75516261111779,
+          "brier": 0.002466365921262302,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2021-22",
+        "snapshot_key": "preseason",
+        "baseline_b": {
+          "log_loss": 3.125215719136359,
+          "brier": 0.0021437885764766934,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 3.125215729169886,
+          "brier": 0.0021437885737269824,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2022-23",
+        "snapshot_key": "preseason",
+        "baseline_b": {
+          "log_loss": 2.7756919107410383,
+          "brier": 0.0020074994968146197,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 2.775691875768537,
+          "brier": 0.0020074994943608615,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2023-24",
+        "snapshot_key": "preseason",
+        "baseline_b": {
+          "log_loss": 4.370784527932077,
+          "brier": 0.002327393350585268,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 4.370783799210722,
+          "brier": 0.0023273931453067827,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2024-25",
+        "snapshot_key": "preseason",
+        "baseline_b": {
+          "log_loss": 2.6924697100673503,
+          "brier": 0.002059651515277264,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 2.692472583999366,
+          "brier": 0.0020596519230080476,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2016-17",
+        "snapshot_key": "tg_10",
+        "baseline_b": {
+          "log_loss": 1.8461602730515576,
+          "brier": 0.0024781870809117887,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2017-18",
+        "snapshot_key": "tg_10",
+        "baseline_b": {
+          "log_loss": 3.167208176256103,
+          "brier": 0.003680545556576798,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 3.543868303100152,
+          "brier": 0.002772162633563278,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2018-19",
+        "snapshot_key": "tg_10",
+        "baseline_b": {
+          "log_loss": 3.833502037924577,
+          "brier": 0.0030104529746138183,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 3.463605662270052,
+          "brier": 0.0027397851595873167,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2019-20",
+        "snapshot_key": "tg_10",
+        "baseline_b": {
+          "log_loss": 2.6507575290986742,
+          "brier": 0.0037262189986067115,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.4484675463624557,
+          "brier": 0.0029882377513311344,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2020-21",
+        "snapshot_key": "tg_10",
+        "baseline_b": {
+          "log_loss": 1.2862879356289625,
+          "brier": 0.0015538806249524152,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 4.7462484589183775,
+          "brier": 0.00286464860463993,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2021-22",
+        "snapshot_key": "tg_10",
+        "baseline_b": {
+          "log_loss": 1.0897008961083683,
+          "brier": 0.0012789912830678863,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.044193040021845,
+          "brier": 0.002554907658719521,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2022-23",
+        "snapshot_key": "tg_10",
+        "baseline_b": {
+          "log_loss": 4.6488718921174,
+          "brier": 0.0033487523071559083,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 2.724934098300166,
+          "brier": 0.002513199337596655,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2023-24",
+        "snapshot_key": "tg_10",
+        "baseline_b": {
+          "log_loss": 0.9385584685744375,
+          "brier": 0.0011738798390935193,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 4.350330917777977,
+          "brier": 0.0027190692391207,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2024-25",
+        "snapshot_key": "tg_10",
+        "baseline_b": {
+          "log_loss": 6.561016290189323,
+          "brier": 0.004758719563146333,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 2.6758633686020197,
+          "brier": 0.0025537313323019113,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2016-17",
+        "snapshot_key": "tg_20",
+        "baseline_b": {
+          "log_loss": 1.7173117027091762,
+          "brier": 0.001968042712599264,
+          "top1": true,
+          "top3": true
+        }
+      },
+      {
+        "season": "2017-18",
+        "snapshot_key": "tg_20",
+        "baseline_b": {
+          "log_loss": 0.40691433726507215,
+          "brier": 0.0003692412945115077,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.57428985495771,
+          "brier": 0.0025594776469359906,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2018-19",
+        "snapshot_key": "tg_20",
+        "baseline_b": {
+          "log_loss": 3.5718232701541193,
+          "brier": 0.0032484992263332054,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 3.482497312025016,
+          "brier": 0.0025441288199722864,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2019-20",
+        "snapshot_key": "tg_20",
+        "baseline_b": {
+          "log_loss": 3.61514758793147,
+          "brier": 0.004710285654350302,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.51814944558739,
+          "brier": 0.0026771348277720214,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2020-21",
+        "snapshot_key": "tg_20",
+        "baseline_b": {
+          "log_loss": 0.798246614322712,
+          "brier": 0.0009324914335269642,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 4.757556938843317,
+          "brier": 0.0026628985365407284,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2021-22",
+        "snapshot_key": "tg_20",
+        "baseline_b": {
+          "log_loss": 0.8280222495102694,
+          "brier": 0.0009029677876771364,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.0668845355179695,
+          "brier": 0.002405980499301619,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2022-23",
+        "snapshot_key": "tg_20",
+        "baseline_b": {
+          "log_loss": 2.1632188721145957,
+          "brier": 0.0025322574734727293,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 2.751277028252323,
+          "brier": 0.002294180782803196,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2023-24",
+        "snapshot_key": "tg_20",
+        "baseline_b": {
+          "log_loss": 0.8430409554359144,
+          "brier": 0.0011153266074984474,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 4.357950139497081,
+          "brier": 0.0025592482988815077,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2024-25",
+        "snapshot_key": "tg_20",
+        "baseline_b": {
+          "log_loss": 6.529033883428322,
+          "brier": 0.004186391723820228,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 2.6816574859384668,
+          "brier": 0.002294108909917679,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2016-17",
+        "snapshot_key": "tg_40",
+        "baseline_b": {
+          "log_loss": 1.3091661367564003,
+          "brier": 0.0014532445067612708,
+          "top1": true,
+          "top3": true
+        }
+      },
+      {
+        "season": "2017-18",
+        "snapshot_key": "tg_40",
+        "baseline_b": {
+          "log_loss": 0.5244989675245132,
+          "brier": 0.00048504294033168115,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.6353429447192998,
+          "brier": 0.002387865707722475,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2018-19",
+        "snapshot_key": "tg_40",
+        "baseline_b": {
+          "log_loss": 4.670540925607086,
+          "brier": 0.0042726000612513595,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 3.4990560603436704,
+          "brier": 0.002368681710110815,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2019-20",
+        "snapshot_key": "tg_40",
+        "baseline_b": {
+          "log_loss": 2.8413048563856007,
+          "brier": 0.0034792547818991294,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 3.5230430150464582,
+          "brier": 0.002529492951998145,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2020-21",
+        "snapshot_key": "tg_40",
+        "baseline_b": {
+          "log_loss": 1.080237846541769,
+          "brier": 0.0011717845994278506,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 4.763788609271794,
+          "brier": 0.002458785243373118,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2021-22",
+        "snapshot_key": "tg_40",
+        "baseline_b": {
+          "log_loss": 0.478622718214371,
+          "brier": 0.0003690635522045159,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.09682142599454,
+          "brier": 0.0021444720650483093,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2022-23",
+        "snapshot_key": "tg_40",
+        "baseline_b": {
+          "log_loss": 2.330458224274202,
+          "brier": 0.002555156745432109,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 2.7627961576188516,
+          "brier": 0.0021181126623131437,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2023-24",
+        "snapshot_key": "tg_40",
+        "baseline_b": {
+          "log_loss": 2.609390367761405,
+          "brier": 0.0028343558775244357,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 4.371397438217393,
+          "brier": 0.00237685396011746,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2024-25",
+        "snapshot_key": "tg_40",
+        "baseline_b": {
+          "log_loss": 5.486704993662552,
+          "brier": 0.004154599916261126,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 2.6943486339417975,
+          "brier": 0.0021180909088593224,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2016-17",
+        "snapshot_key": "tg_60",
+        "baseline_b": {
+          "log_loss": 1.3264387876535588,
+          "brier": 0.0014200646128704575,
+          "top1": true,
+          "top3": true
+        }
+      },
+      {
+        "season": "2017-18",
+        "snapshot_key": "tg_60",
+        "baseline_b": {
+          "log_loss": 0.761654793417269,
+          "brier": 0.0007550214980530373,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.6555558864893873,
+          "brier": 0.0022814246470220473,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2018-19",
+        "snapshot_key": "tg_60",
+        "baseline_b": {
+          "log_loss": 5.427193691444279,
+          "brier": 0.004392529349927928,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 3.513249791869804,
+          "brier": 0.002210719996214406,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2019-20",
+        "snapshot_key": "tg_60",
+        "baseline_b": {
+          "log_loss": 2.223717104846168,
+          "brier": 0.002261706903255192,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.528509191453564,
+          "brier": 0.002414147743199285,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2020-21",
+        "snapshot_key": "tg_60",
+        "baseline_b": {
+          "log_loss": 0.871760777238364,
+          "brier": 0.0008366244306938947,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 4.770442192378378,
+          "brier": 0.002329914360792201,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2021-22",
+        "snapshot_key": "tg_60",
+        "baseline_b": {
+          "log_loss": 0.6100226818365574,
+          "brier": 0.0005326007921323067,
+          "top1": true,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 3.1045789030629094,
+          "brier": 0.0020466118414021826,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2022-23",
+        "snapshot_key": "tg_60",
+        "baseline_b": {
+          "log_loss": 2.094796904506143,
+          "brier": 0.0021147488161462145,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 2.7652175923214215,
+          "brier": 0.002046307844279634,
+          "top1": false,
+          "top3": true
+        }
+      },
+      {
+        "season": "2023-24",
+        "snapshot_key": "tg_60",
+        "baseline_b": {
+          "log_loss": 1.9030354634084896,
+          "brier": 0.0021596294557948738,
+          "top1": false,
+          "top3": true
+        },
+        "baseline_a": {
+          "log_loss": 4.372896243312289,
+          "brier": 0.002290103590444117,
+          "top1": false,
+          "top3": false
+        }
+      },
+      {
+        "season": "2024-25",
+        "snapshot_key": "tg_60",
+        "baseline_b": {
+          "log_loss": 4.043915111226389,
+          "brier": 0.0036810928015925787,
+          "top1": false,
+          "top3": false
+        },
+        "baseline_a": {
+          "log_loss": 2.69701298019557,
+          "brier": 0.0019658531978246213,
+          "top1": false,
+          "top3": true
+        }
+      }
+    ],
+    "test_seasons": [
+      "2016-17",
+      "2017-18",
+      "2018-19",
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25"
+    ],
+    "beats_baseline": true,
+    "not_worse_than_a": true,
+    "shortfall": null,
+    "calibration": {
+      "bins": [
+        {
+          "low": 0.0,
+          "high": 0.1,
+          "count": 22171,
+          "mean_predicted": 0.0010205294154555424,
+          "empirical_rate": 0.0012178070452392765
+        },
+        {
+          "low": 0.1,
+          "high": 0.2,
+          "count": 50,
+          "mean_predicted": 0.14232704553711606,
+          "empirical_rate": 0.16
+        },
+        {
+          "low": 0.2,
+          "high": 0.30000000000000004,
+          "count": 14,
+          "mean_predicted": 0.2509607790673008,
+          "empirical_rate": 0.2857142857142857
+        },
+        {
+          "low": 0.30000000000000004,
+          "high": 0.4,
+          "count": 10,
+          "mean_predicted": 0.350091320747562,
+          "empirical_rate": 0.5
+        },
+        {
+          "low": 0.4,
+          "high": 0.5,
+          "count": 9,
+          "mean_predicted": 0.4433499455361128,
+          "empirical_rate": 0.5555555555555556
+        },
+        {
+          "low": 0.5,
+          "high": 0.6000000000000001,
+          "count": 5,
+          "mean_predicted": 0.5580561040551411,
+          "empirical_rate": 0.6
+        },
+        {
+          "low": 0.6000000000000001,
+          "high": 0.7000000000000001,
+          "count": 3,
+          "mean_predicted": 0.6384909847260317,
+          "empirical_rate": 0.6666666666666666
+        },
+        {
+          "low": 0.7000000000000001,
+          "high": 0.8,
+          "count": 2,
+          "mean_predicted": 0.7504067055582665,
+          "empirical_rate": 0.0
+        },
+        {
+          "low": 0.8,
+          "high": 0.9,
+          "count": 5,
+          "mean_predicted": 0.8476473763914326,
+          "empirical_rate": 0.0
+        },
+        {
+          "low": 0.9,
+          "high": 1.0,
+          "count": 3,
+          "mean_predicted": 0.9360575537696748,
+          "empirical_rate": 0.0
+        }
+      ],
+      "predictions": 22272,
+      "positive_outcomes": 54
+    },
+    "log_loss_interval": {
+      "mean_log_loss_b_minus_a": -0.8908062473043721,
+      "ci95": [
+        -1.4380914555429614,
+        -0.30583594784191054
+      ],
+      "resamples": 1000,
+      "folds": 48
+    },
+    "feature_names": [
+      "pts_per_game",
+      "reb_per_game",
+      "ast_per_game",
+      "stl_per_game",
+      "blk_per_game",
+      "tov_per_game",
+      "win_pct",
+      "games_played",
+      "prior_pts_per_game",
+      "prior_games",
+      "prior_win_pct"
+    ],
+    "baseline_a_features": [
+      "prior_pts_per_game",
+      "prior_games",
+      "prior_win_pct"
+    ],
+    "note": "基线 A 只用赛前可知的上场均、上场次和上季球队胜率，即使用赛季末快照打分也不看本季数据。基线 B 只在同一快照键的更早赛季上拟合，再用该快照当时的特征打分。这是赛季留出的基线对照，不与市场比较，也不声称优于市场或代表真实实力。",
+    "other_player_id": "OTHER"
+  },
+  "walk_forward_reproducible": true,
+  "not_worse_than_a": true,
+  "shortfall": null,
+  "snapshot_shortfalls": [
+    "tg_10 brier: B 0.0028 > A 0.0027",
+    "tg_40 brier: B 0.0024 > A 0.0023"
+  ],
+  "unpaired_seasons": [
+    "2016-17"
+  ],
+  "model_status": "已训练",
+  "training": {
+    "status": "ok",
+    "reason": null,
+    "model_version": "baseline-b-20261019T123347Z",
+    "shrinkage_w": 0.8
+  },
+  "target_season": "2026-27",
+  "target_season_probabilities": "未推断",
+  "calibration_plot": "/workspace/nba-mvp/data/reports/stage2_reliability.svg",
+  "seasons": [
+    {
+      "season": "2015-16",
+      "winner": "Stephen Curry",
+      "votes": "ok",
+      "vote_error": null,
+      "schedule_games": 1230,
+      "failed_games": 0,
+      "leakage_problems": 0
+    },
+    {
+      "season": "2016-17",
+      "winner": "Russell Westbrook",
+      "votes": "ok",
+      "vote_error": null,
+      "schedule_games": 1230,
+      "failed_games": 0,
+      "leakage_problems": 0
+    },
+    {
+      "season": "2017-18",
+      "winner": "James Harden",
+      "votes": "ok",
+      "vote_error": null,
+      "schedule_games": 1230,
+      "failed_games": 0,
+      "leakage_problems": 0
+    },
+    {
+      "season": "2018-19",
+      "winner": "Giannis Antetokounmpo",
+      "votes": "ok",
+      "vote_error": null,
+      "schedule_games": 1230,
+      "failed_games": 0,
+      "leakage_problems": 0
+    },
+    {
+      "season": "2019-20",
+      "winner": "Giannis Antetokounmpo",
+      "votes": "ok",
+      "vote_error": null,
+      "schedule_games": 1059,
+      "failed_games": 0,
+      "leakage_problems": 0
+    },
+    {
+      "season": "2020-21",
+      "winner": "Nikola Jokić",
+      "votes": "ok",
+      "vote_error": null,
+      "schedule_games": 1080,
+      "failed_games": 0,
+      "leakage_problems": 0
+    },
+    {
+      "season": "2021-22",
+      "winner": "Nikola Jokić",
+      "votes": "ok",
+      "vote_error": null,
+      "schedule_games": 1230,
+      "failed_games": 0,
+      "leakage_problems": 0
+    },
+    {
+      "season": "2022-23",
+      "winner": "Joel Embiid",
+      "votes": "ok",
+      "vote_error": null,
+      "schedule_games": 1230,
+      "failed_games": 0,
+      "leakage_problems": 0
+    },
+    {
+      "season": "2023-24",
+      "winner": "Nikola Jokić",
+      "votes": "ok",
+      "vote_error": null,
+      "schedule_games": 1230,
+      "failed_games": 0,
+      "leakage_problems": 0
+    },
+    {
+      "season": "2024-25",
+      "winner": "Shai Gilgeous-Alexander",
+      "votes": "ok",
+      "vote_error": null,
+      "schedule_games": 1230,
+      "failed_games": 1,
+      "leakage_problems": 0
+    }
+  ],
+  "note": "回测只读 data/archive/stage1，不访问网络，也不对目标赛季调用 infer。有标签赛季少于 min_historical_seasons 时模型状态保持待训练。2014-15 及更早赛程在此环境为 HTTP 403，没有补造比赛或选票。"
+}

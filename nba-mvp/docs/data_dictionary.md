@@ -9,7 +9,7 @@ PRD 的核心字段和当前落点：
 | 字段 | 落点 |
 | --- | --- |
 | `player_id` | `game_logs` / `feature_snapshots`。官方 `personId`。`OTHER` 是其他球员 |
-| `season` | `2022-23`、`2023-24`、`2024-25` 为可重放样例。目标季仍是 `2026-27` |
+| `season` | 可重放样例从 `2015-16` 到 `2024-25`。`2014-15` 及更早赛程为 HTTP 403，没有补造。目标季仍是 `2026-27` |
 | `snapshot_date` | 该球员这条快照的截止日期。赛前是常规赛首场的前一天 |
 | `source_timestamp` | 写入这条特征的原始响应抓取时间（UTC）。必须能在 `data/archive/stage1` 里找到 |
 | `games_played` | 截止日期前实际上场的比赛数。DNP 不计入，也不写成 0 分钟 |
@@ -19,16 +19,20 @@ PRD 的核心字段和当前落点：
 | `team_features` | 仅由该球队 `game_date <= snapshot_date` 的赛果汇总 |
 | `injury_status` | 样例里没有逐日官方伤病报告，写 `unknown`，不写成健康 |
 | `official_eligible` | 空。样例赛季没有逐人官方资格裁定，不把后来的 65 场规则套回去置 0 |
-| `model_version` | 空。三季样本不够训练门禁，状态是「待训练」 |
+| `model_version` | 有标签赛季少于 10 个时为空，状态是「待训练」。`stage2-backtest` 不对 2026—27 写概率 |
 | `award_winner` | 官方投票唯一最高票为 1，其余为 0。这是赛季末标签，不是赛中特征 |
 
 `stats.nba.com/stats` 在此环境会读超时，不作为 Stage 1 的可用路径。已经走通的官方路径是：
 
 - 逐场：`www.nba.com/game/{game_id}/box-score` 页面里的官方 `game` 对象。存档时去掉转播和图表，保留身份、比分和球员技术统计。
 - 球队赛果和赛程日期：`data.nba.com` 的 `00_full_schedule.json`。只收常规赛 `gid` 以 `002` 开头且状态为 `Final` 的比赛。
-- 投票：`pr.nba.com` 奖项页链出的 NBA Communications PDF。2022—23 与 2023—24 用投票结果 PDF。2024—25 的结果图只存档、不做 OCR，总分由选票 PDF 按 10/7/5/3/1 汇总。
+- 投票：NBA Communications 的结果表或选票。2015—16 是 `pr.nba.com` 上的官方 HTML 表。2016—17 到 2018—19、2020—21、2021—22、2022—23、2023—24 是结果 PDF。2019—20 和 2024—25 的结果图/扫描件只说明来源、不做 OCR，总分由选票 PDF 按 10/7/5/3/1 汇总。
 
-原始文件在 `data/archive/stage1/`：`schedules/*.json`、`boxscores/*.jsonl.gz`、`votes/*`、`manifest.json`。重放命令不访问网络。2024—25 的 `0022401084` 箱分被源站拒绝，该场只有赛程里的球队比分，没有球员行。
+原始文件在 `data/archive/stage1/`：`schedules/*.json`、`boxscores/*.jsonl.gz`、`votes/*`、`manifest.json`。重放命令不访问网络。2024—25 的 `0022401084` 箱分被源站拒绝，该场只有赛程里的球队比分，没有球员行。2019—20 有 1059 场、2020—21 有 1080 场，都是缩短赛季，不补到 1230 场。2017—18 赛程里的 `0021700211`（2017-11-15，猛龙客场对鹈鹕）状态停在 `1st Qtr`，赛程比分不采用；该场以官方箱分的 Final 比分写入。箱分也拿不到时，胜负保持为空，不记成输球。
+
+`player_features.prior_pts_per_game` 和 `prior_games` 只来自上一季、并且不晚于本条快照日期的比赛。`team_features.prior_win_pct` 是该球员上一季最后所在球队、在快照日期之前的胜率。没有上一季时这三项为空，不写成 0。2015—16 是存档的第一季，赛前这三项为空。基线 A 只用这三项。基线 B 才使用本季场均、本季胜率和已赛场次。模型在打分时用训练集的中位数填补特征里的空值，这个填补不写回快照。
+
+`stage2-backtest` 写 `data/reports/stage2_backtest.json` 和 `data/reports/stage2_reliability.svg`。可靠性图按基线 B 的预测概率分档，空档保持为空。
 
 2022—23 的赛前快照没有上一季逐场，上一季场均为空，不是 0。2023—24 和 2024—25 的赛前快照只用更早赛季、并且不晚于赛季开始日前一天的比赛。
 

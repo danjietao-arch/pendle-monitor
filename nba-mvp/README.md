@@ -33,6 +33,22 @@ PYTHONPATH=src python3 -m nba_mvp selftest
 
 已知缺口：2024—25 的 `0022401084`（2025-03-30，活塞客场对森林狼）在 `www.nba.com` 上持续返回 Access Denied。该场球队比分仍在赛程存档里，球员逐场缺失，没有填 0。
 
+## Stage 2：历史赛季与两条基线
+
+可拉取的有标签赛季是 2015—16 到 2024—25。`data.nba.com` 对 2014 及更早的赛程返回 HTTP 403，那些赛季没有入库，也没有补造比赛或选票。2019—20 的官方结果 PDF 是扫描件，总分来自选票 PDF 的 10/7/5/3/1，不做 OCR。缩短赛季保持实际场次，不补到 1230 场。
+
+基线 A 只用赛前可知的上场均、上场次和上季球队胜率。基线 B 是 L2 逻辑回归（`C=0.1`，`random_state=0`），按快照键只用更早赛季的同一快照拟合，再在该快照内 softmax。Walk-forward 比较 log loss 和 Brier；Top-1 / Top-3 是辅助指标。可靠性图是 `data/reports/stage2_reliability.svg`。
+
+```bash
+PYTHONPATH=src python3 -m nba_mvp stage1-fetch --season 2015-16 --season 2016-17 --season 2017-18 --season 2018-19 --season 2019-20 --season 2020-21 --season 2021-22
+PYTHONPATH=src python3 -m nba_mvp stage2-backtest
+PYTHONPATH=src python3 -m nba_mvp selftest
+```
+
+`stage2-backtest` 只读存档，不访问网络，也不对 2026—27 调用 `infer`。有标签赛季少于 10 个时，状态保持「待训练」。这次存档里 10 个赛季都有官方选票，门禁达到后会写出训练产物，但本命令仍不推断 2026—27。赔率和 Polymarket 不进入这条回测。
+
+2016—17 不进入 A/B 的配对均值：2015—16 没有更早赛季，赛前特征全空，基线 A 无法拟合。从 2017—18 起的配对折上，基线 B 的平均 log loss 和 Brier 都不高于基线 A。`tg_10` 和 `tg_40` 的 Brier 略高，写在报告的 `snapshot_shortfalls` 里，没有为了抹平这个差距去调 `C`。Top-1 / Top-3 只作辅助。可靠性图的正样本就是这些留出快照，样本很小。
+
 ## 市场
 
 `data/registry/market_registry.json` 一开始是空的。程序只会把 Gamma 搜索结果放进待审核队列。总决赛 MVP、错误赛季、未人工确认的市场不会进入对照。审核通过后手工写入注册表，每名球员只保留一个主市场。
@@ -41,7 +57,7 @@ PYTHONPATH=src python3 -m nba_mvp selftest
 
 ## 模型
 
-基线 B 是带 L2 的逻辑回归，再在每个快照内做 softmax。有标签的历史赛季少于 `min_historical_seasons`（默认 10），或模型来自合成样本时，目标赛季不输出概率。蒙特卡洛默认关闭。收缩权重只在回测拟合出结果后才使用。
+基线 A 是赛前先验。基线 B 是带 L2 的逻辑回归，再在每个快照内做 softmax。有标签的历史赛季少于 `min_historical_seasons`（默认 10），或模型来自合成样本时，目标赛季不输出概率。蒙特卡洛默认关闭。收缩权重只在回测拟合出结果后才使用。Stage 2 的对照见上一节，不使用 Polymarket 价格。
 
 ## 目录
 

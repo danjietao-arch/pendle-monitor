@@ -97,6 +97,43 @@ def test_leakage():
     assert alpha_pre["player_features"]["game_ids"] == []
     assert alpha_pre["player_features"]["pts"] is None
     assert alpha_pre["games_played"] == 0
+    assert alpha["team_features"]["prior_win_pct"] is None
+    assert alpha_pre["team_features"]["prior_win_pct"] is None
+    with_prior = build_snapshot_rows(
+        season="2098-99",
+        snapshot_key="tg_1",
+        games=games,
+        team_games=teams,
+        prior_games=prior,
+        prior_team_games=[
+            _team("T", "old", "2098-04-01", win=1),
+            _team("T", "old2", "2098-04-02", win=0),
+            _team("T", "future-team", "2099-01-01", win=1),
+        ],
+        votes=[{"player_id": "A", "is_winner": 1}],
+        players={"A": {"player_id": "A", "player_name": "Alpha", "team_id": "T"}},
+        min_minutes=0,
+        rule={"season": "2098-99", "status": "unverified"},
+        season_start="2098-10-20",
+    )
+    alpha_prior = next(row for row in with_prior if row["player_id"] == "A")
+    assert alpha_prior["team_features"]["prior_win_pct"] == 0.5
+    no_history = build_snapshot_rows(
+        season="2098-99",
+        snapshot_key="preseason",
+        games=games,
+        team_games=teams,
+        prior_games=[],
+        votes=[{"player_id": "A", "is_winner": 1}],
+        players={"A": {"player_id": "A", "player_name": "Alpha", "team_id": "T"}},
+        min_minutes=0,
+        rule={"season": "2098-99", "status": "unverified"},
+        season_start="2098-10-20",
+    )
+    alpha_new = next(row for row in no_history if row["player_id"] == "A")
+    assert alpha_new["player_features"]["prior_games"] is None
+    assert alpha_new["player_features"]["prior_pts_per_game"] is None
+    assert alpha_new["team_features"]["prior_win_pct"] is None
 
 
 def test_trade_cutoff_does_not_use_future_team():
@@ -176,6 +213,38 @@ def test_official_vote_and_boxscore_parsers():
     assert shai["first_place_votes"] == 1
     assert jokic["vote_points"] == 7
     assert jokic["is_winner"] == 0
+    westbrook = parse_voting_results_text("Westbrook, Russell (OKC.) 69 19 13 0 0 888\n")
+    assert westbrook[0]["player_name"] == "Russell Westbrook"
+    assert westbrook[0]["vote_points"] == 888
+    jokic_line = parse_voting_results_text("Nikola Jokić (Denver) 91 8 1 0 0 971\n")
+    assert jokic_line[0]["player_name"] == "Nikola Jokić"
+    html = """
+    <table>
+      <tr><th>Player</th><th>1st</th><th>2nd</th><th>3rd</th><th>4th</th><th>5th</th><th>Points</th></tr>
+      <tr><td>Stephen Curry</td><td>131</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1,310</td></tr>
+      <tr><td>Kawhi Leonard</td><td></td><td>1</td><td>0</td><td>0</td><td>0</td><td>7</td></tr>
+      <tr><td>LeBron James</td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td>&#8212;</td><td>1</td><td>1</td></tr>
+    </table>
+    """
+    from nba_mvp.collect.official import parse_mvp_results_html
+
+    table = parse_mvp_results_html(html)
+    names = [row["player_name"] for row in table]
+    assert names == ["Stephen Curry", "LeBron James"]
+    assert table[0]["vote_points"] == 1310
+    assert next(row for row in table if row["player_name"] == "LeBron James")["first_place_votes"] == 0
+    ballot = (
+        "Albert, Marv         Turner                        Antetokounmpo, Giannis (MIL)"
+        "        James, LeBron (LAL)       Harden, James (HOU) Leonard, Kawhi (LAC) Doncic, Luka (DAL)\n"
+    )
+    giannis_ballot = parse_voter_ballot_text(ballot)
+    assert giannis_ballot[0]["player_name"] == "Giannis Antetokounmpo"
+    assert all("Turner" not in row["player_name"] and "Albert" not in row["player_name"] for row in giannis_ballot)
+    try:
+        parse_voting_results_text("Alpha, Team 1 0 0 0 0 10\nBeta, Team 1 0 0 0 0 10\n")
+        raise AssertionError("并列最高票不能猜获奖者")
+    except DataError:
+        pass
     schedule = parse_schedule(
         {
             "lscd": [
@@ -198,6 +267,37 @@ def test_official_vote_and_boxscore_parsers():
     )
     assert len(schedule) == 1
     assert schedule[0]["home"]["win"] == 1
+    stuck = parse_schedule(
+        {
+            "lscd": [
+                {
+                    "mscd": {
+                        "g": [
+                            {
+                                "gid": "0021700211",
+                                "gdte": "2017-11-15",
+                                "stt": "1st Qtr",
+                                "h": {"tid": 1610612740, "ta": "NOP", "s": "20"},
+                                "v": {"tid": 1610612761, "ta": "TOR", "s": "18"},
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    )
+    assert stuck[0]["schedule_final"] is False
+    assert stuck[0]["home"]["win"] is None
+    assert stuck[0]["home"]["points_for"] is None
+    from nba_mvp.collect.official import merge_final_score
+
+    merged = merge_final_score(
+        stuck[0],
+        {"gameStatus": 3, "homeTeam": {"teamId": 1610612740, "score": 116}, "awayTeam": {"teamId": 1610612761, "score": 125}},
+    )
+    assert merged["home"]["points_for"] == 116
+    assert merged["away"]["win"] == 1
+    assert merged["score_source"] == "boxscore"
     played, unparsed = parse_boxscore_players(
         {
             "gameId": "0022400001",
@@ -785,6 +885,112 @@ def test_hourly_rows_idempotent(tmp_path):
     conn.close()
 
 
+def test_walk_forward_reproducible_and_not_worse():
+    import math
+
+    from nba_mvp.model.backtest import walk_forward
+    from nba_mvp.model.common import FEATURE_NAMES, PRESEASON_FEATURE_NAMES, feature_vector, restrict_features
+
+    def row(season, key, player, winner, pts, prior=20):
+        preseason = key == "preseason"
+        return {
+            "season": season,
+            "snapshot_key": key,
+            "player_id": player,
+            "award_winner": 1 if player == winner else 0,
+            "eligibility_status": "unverified",
+            "games_played": 0 if preseason else 40,
+            "player_features": {
+                "pts_per_game": None if preseason else pts,
+                "reb_per_game": None if preseason else 8,
+                "ast_per_game": None if preseason else 6,
+                "stl_per_game": None if preseason else 1,
+                "blk_per_game": None if preseason else 1,
+                "tov_per_game": None if preseason else 3,
+                "prior_pts_per_game": prior,
+                "prior_games": 70,
+            },
+            "team_features": {
+                "win_pct": None if preseason else 0.6,
+                "prior_win_pct": 0.55,
+            },
+        }
+
+    rows = []
+    seasons = ["2010-11", "2011-12", "2012-13", "2013-14"]
+    for index, season in enumerate(seasons):
+        winner = "A" if index % 2 == 0 else "B"
+        for key in ("preseason", "end"):
+            for player in ("A", "B"):
+                points = 32 if player == winner else 14
+                rows.append(row(season, key, player, winner, points))
+    masked = restrict_features([row("2013-14", "end", "A", "A", 32)], PRESEASON_FEATURE_NAMES)[0]
+    vector = feature_vector(masked)
+    assert math.isnan(vector[FEATURE_NAMES.index("pts_per_game")])
+    assert math.isnan(vector[FEATURE_NAMES.index("win_pct")])
+    assert vector[FEATURE_NAMES.index("prior_pts_per_game")] == 20
+    assert vector[FEATURE_NAMES.index("games_played")] != vector[FEATURE_NAMES.index("games_played")]
+    first = walk_forward(rows)
+    second = walk_forward(rows)
+    assert first == second
+    assert first["baseline_a_features"] == list(PRESEASON_FEATURE_NAMES)
+    assert first["not_worse_than_a"] is True, first["shortfall"]
+    assert first["by_snapshot"]["end"]["log_loss_b"] < first["by_snapshot"]["end"]["log_loss_a"]
+    assert "market" not in ",".join(first["feature_names"])
+
+
+def test_stage2_archive_backtest(tmp_path):
+    from nba_mvp.stage1 import DOCUMENTED_BLOCKERS, HISTORICAL_SEASONS
+    from nba_mvp.stage2 import run_stage2_backtest
+
+    real = load_config()
+    archive = project_path(real, "archive")
+    present = [season for season in HISTORICAL_SEASONS if (archive / "schedules" / f"{season}.json").exists()]
+    assert "2014-15" not in present
+    assert any(item["season"] == "2014-15" and item["error"] == "HTTP 403" for item in DOCUMENTED_BLOCKERS)
+    if len(present) < len(HISTORICAL_SEASONS):
+        missing = [season for season in HISTORICAL_SEASONS if season not in present]
+        raise AssertionError(f"历史存档未齐: {missing}")
+    cfg = _temp_config(tmp_path)
+    cfg["paths"]["archive"] = str(archive)
+    cfg["paths"]["reports"] = str(tmp_path / "reports")
+    cfg["paths"]["models"] = str(tmp_path / "models")
+    conn = connect(tmp_path / "stage2.sqlite")
+    try:
+        summary = run_stage2_backtest(cfg, conn)
+    finally:
+        conn.close()
+    assert summary["leakage_ok"] is True
+    assert summary["walk_forward_reproducible"] is True
+    assert summary["not_worse_than_a"] is True or bool(summary["shortfall"])
+    assert not any(summary["fabricated_player_rows"].values())
+    assert summary["labeled_season_count"] <= len(HISTORICAL_SEASONS)
+    if summary["labeled_season_count"] < summary["min_historical_seasons"]:
+        assert summary["model_status"] == "待训练"
+        assert summary["target_season_probabilities"] == "待训练"
+    else:
+        assert summary["target_season_probabilities"] == "未推断"
+    conn = connect(tmp_path / "stage2.sqlite")
+    try:
+        stored = conn.execute(
+            "SELECT COUNT(*) AS n FROM predictions WHERE season = ?",
+            (cfg["target_season"],),
+        ).fetchone()["n"]
+    finally:
+        conn.close()
+    assert stored == 0
+    for season in ("2019-20", "2020-21"):
+        if season in summary["schedule_games"]:
+            assert summary["schedule_games"][season] < 1230
+            assert summary["schedule_games"][season] > 0
+    for season, count in summary["schedule_games"].items():
+        if season not in {"2019-20", "2020-21"}:
+            assert count == 1230
+    plot = Path(summary["calibration_plot"])
+    assert plot.exists()
+    assert plot.read_text(encoding="utf-8").startswith("<svg")
+
+
 def main() -> int:
     import tempfile
 
@@ -794,6 +1000,8 @@ def main() -> int:
         test_unverified_eligibility_not_zero,
         test_official_vote_and_boxscore_parsers,
         test_stage1_archive_replay,
+        test_walk_forward_reproducible_and_not_worse,
+        test_stage2_archive_backtest,
         test_vote_and_gamelog_parsers,
         test_quote_book_and_future_backfill,
         test_delta_alerts_and_normalization,
@@ -816,6 +1024,7 @@ def main() -> int:
                 test_hourly_rows_idempotent,
                 test_upsert_does_not_replace_with_null,
                 test_stage1_archive_replay,
+                test_stage2_archive_backtest,
             }:
                 with tempfile.TemporaryDirectory() as folder:
                     test(Path(folder))

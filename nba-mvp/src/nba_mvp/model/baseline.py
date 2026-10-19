@@ -58,7 +58,7 @@ def make_pipeline() -> Pipeline:
     return Pipeline(
         [
             ("impute", SimpleImputer(strategy="median")),
-            ("clf", LogisticRegression(C=0.1, solver="lbfgs", max_iter=500)),
+            ("clf", LogisticRegression(C=0.1, solver="lbfgs", max_iter=500, random_state=0)),
         ]
     )
 
