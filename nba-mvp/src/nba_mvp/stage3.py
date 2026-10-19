@@ -490,6 +490,7 @@ def _write_board(cfg: dict, summary: dict, prior_rows: list[dict] | None = None)
         f"<p>{html.escape(DISCLAIMER)}</p>",
         f"<p>as_of {html.escape(str(summary.get('as_of')))} · {html.escape(str(summary.get('model_version')))} · {html.escape(str(summary.get('data_status')))}</p>",
     ]
+    lines.append("<section data-kind=\"live\"><h2>真实预测</h2>")
     if summary.get("data_status") == "STALE":
         lines.append("<p>STALE · 待采集</p>")
         if prior_rows:
@@ -507,6 +508,10 @@ def _write_board(cfg: dict, summary: dict, prior_rows: list[dict] | None = None)
         lines.append("<p>待采集</p>")
     else:
         lines.extend(_board_table(current))
+    lines.append("</section>")
+    lines.append("<section data-kind=\"scenario\"><h2>假设情景</h2>")
+    lines.append("<p>这不是真实预测。日更看板只放基线概率；蒙特卡洛在研究看板里单独列出。</p>")
+    lines.append("</section>")
     path = reports_dir(cfg) / "stage3_board.html"
     write_text(path, "\n".join(lines))
     return str(path)

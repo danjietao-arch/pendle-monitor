@@ -69,6 +69,18 @@ PYTHONPATH=src python3 -m nba_mvp stage3-daily --source archive --season 2024-25
 
 周快照只在基线 B 已过门禁并且当天推断成功时写出。预计胜场是收缩后胜率的简单区间，不是蒙特卡洛。
 
+## Stage 4：余量模拟和研究看板
+
+`stage4-simulate` 用更早赛季拟合收缩 `w = 场次 / (场次 + k)`，再对目标快照做赛季余量模拟。`k` 由历史误差选，不把「打满 20 场」写成完全相信当季。每条情景模拟剩余出勤、未来得分和球队胜场，再用更早赛季的获奖模型抽一次票。`P(i) = 抽中次数 / N`，候选里保留其他球员。投票参数用自助法重拟合的多份模型表示。
+
+默认预测仍是基线 B。升格要同时满足：至少 200 次模拟、两个随机种子都在 log loss、Brier 和 log loss 波动上优于基线 B。少于此数只记点估计，不改默认。`config.json` 里 `monte_carlo.enabled` 保持 false。2026—27 资格仍是 `unverified`，模拟不会按 65 场或统计榜 58 场把获奖概率置 0。
+
+```bash
+PYTHONPATH=src python3 -m nba_mvp stage4-simulate --demo-season 2024-25 --draws 200 --seed 0 --probe-live
+```
+
+打开 `data/reports/stage4_board.html`。真实预测和假设情景分属两个区块；「再缺席 10 场」只出现在假设情景里。数值以 `data/reports/stage4_monte_carlo.json` 和 `data/reports/stage4_probabilities.csv` 为准。`--probe-live` 会再请求一次 2026—27 赛程和伤病页，失败时写在看板上，不编造比赛。
+
 ## 市场
 
 `data/registry/market_registry.json` 一开始是空的。程序只会把 Gamma 搜索结果放进待审核队列。总决赛 MVP、错误赛季、未人工确认的市场不会进入对照。审核通过后手工写入注册表，每名球员只保留一个主市场。

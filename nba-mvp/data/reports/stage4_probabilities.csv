@@ -1,0 +1,27 @@
+season,as_of,player_id,player_name,team_abbr,p_baseline,p_monte_carlo,p_scenario_miss10,p_eligibility,p_games_threshold,games_needed,record_band,model_version,primary
+2024-25,2025-01-22,203999,Nikola Jokić,DEN,0.9022170913008849,0.805,0.66,,,,45–53,baseline_b,baseline_b
+2024-25,2025-01-22,203507,Giannis Antetokounmpo,MIL,0.0554284525697553,0.085,,,,,43–51,baseline_b,baseline_b
+2024-25,2025-01-22,1631094,Paolo Banchero,ORL,0.009582706848622634,0.0,,,,,41–49,baseline_b,baseline_b
+2024-25,2025-01-22,1626157,Karl-Anthony Towns,NYK,0.007802904106522676,0.035,,,,,48–58,baseline_b,baseline_b
+2024-25,2025-01-22,203076,Anthony Davis,LAL,0.006713587520628673,0.015,,,,,41–49,baseline_b,baseline_b
+2024-25,2025-01-22,1628369,Jayson Tatum,BOS,0.0059254552119352225,0.01,,,,,53–61,baseline_b,baseline_b
+2024-25,2025-01-22,1628983,Shai Gilgeous-Alexander,OKC,0.004257192920627596,0.04,,,,,66–72,baseline_b,baseline_b
+2024-25,2025-01-22,1641705,Victor Wembanyama,SAS,0.0024320659681370915,0.0,,,,,34–43,baseline_b,baseline_b
+2024-25,2025-01-22,1629029,Luka Dončić,DAL,0.0011713120399377591,0.0,,,,,40–49,baseline_b,baseline_b
+2024-25,2025-01-22,2544,LeBron James,LAL,0.0009886489421767934,0.0,,,,,41–49,baseline_b,baseline_b
+2024-25,2025-01-22,1630595,Cade Cunningham,DET,0.0006730999409089709,0.005,,,,,38–47,baseline_b,baseline_b
+2024-25,2025-01-22,1630162,Anthony Edwards,MIN,0.0005768519056226244,0.0,,,,,39–47,baseline_b,baseline_b
+2024-25,2025-01-22,1628368,De'Aaron Fox,SAC,0.000543163034424306,0.005,,,,,37–44,baseline_b,baseline_b
+2024-25,2025-01-22,201142,Kevin Durant,PHX,0.0005256211079354596,0.0,,,,,37–45,baseline_b,baseline_b
+2024-25,2025-01-22,1630532,Franz Wagner,ORL,0.00037497021726621145,0.0,,,,,41–49,baseline_b,baseline_b
+2024-25,2025-01-22,203081,Damian Lillard,MIL,0.000294151402758702,0.0,,,,,43–51,baseline_b,baseline_b
+2024-25,2025-01-22,1628973,Jalen Brunson,NYK,0.000178195458909726,0.0,,,,,48–58,baseline_b,baseline_b
+2024-25,2025-01-22,1626164,Devin Booker,PHX,0.00011258295356799608,0.0,,,,,37–45,baseline_b,baseline_b
+2024-25,2025-01-22,1630178,Tyrese Maxey,PHI,0.00011225683667907883,0.0,,,,,27–35,baseline_b,baseline_b
+2024-25,2025-01-22,1630163,LaMelo Ball,CHA,2.430756077563e-05,0.0,,,,,19–26,baseline_b,baseline_b
+2024-25,2025-01-22,1629639,Tyler Herro,MIA,2.364287637622475e-05,0.0,,,,,38–45,baseline_b,baseline_b
+2024-25,2025-01-22,1630560,Cam Thomas,BKN,2.0702566202126192e-05,0.0,,,,,26–34,baseline_b,baseline_b
+2024-25,2025-01-22,202681,Kyrie Irving,DAL,1.690356997309773e-05,0.0,,,,,40–49,baseline_b,baseline_b
+2024-25,2025-01-22,203897,Zach LaVine,CHI,2.508088665470014e-06,0.0,,,,,33–40,baseline_b,baseline_b
+2024-25,2025-01-22,203954,Joel Embiid,PHI,1.6044328958470783e-06,0.0,,,,,27–35,baseline_b,baseline_b
+2024-25,2025-01-22,OTHER,其他球员,,2.0617809961465072e-08,0.0,,,,,,baseline_b,baseline_b

@@ -76,6 +76,14 @@ Polymarket 价格不是特征。`use_in_training` 为 true 时训练直接拒绝
 
 推断成功的每一天把概率行写进当天 JSON 的 `curve`。周快照表仍只在周一或该赛季第一份快照时追加。
 
+## Stage 4 蒙特卡洛
+
+`stage4-simulate` 的收缩形式是 `w = games / (games + k)`。`k` 来自历史快照对最终场均的误差，样本少于 10 个就不给出权重。剩余场次只数赛程里 `game_date` 晚于该球员快照日的比赛。出勤概率是已赛场次比上球队已赛场次；官方伤病状态只会按比例下调，未知伤病不会变成 0。
+
+模拟达标概率 `p_games_threshold` 只在资格规则 `verified` 且写了 `min_games` 时有值。统计榜的 58 场不参与。规则 `unverified` 时它和 `p_eligibility` 都为空。官方认定无资格的球员获奖概率为 0。
+
+门禁比较同一批候选上的基线 B 和蒙特卡洛。模拟次数少于 200，或两个随机种子没有同时优于基线 B 时，不升格。未升格时 CSV 的 `primary` 是 `baseline_b`，看板上的真实预测用基线 B，蒙特卡洛和「再缺席 10 场」放在假设情景区块。
+
 周快照字段：`player_id`、`player_name`、`p_award`、`delta_pp_vs_last_week`、`p_eligibility`、`projected_wins_low`、`projected_wins_high`、`as_of`、`model_version`、`reasons`。没有上周概率时 Δpp 为空，不写成 0。没有胜场或剩余赛程时预计胜场区间为空。
 
 ## 市场与每小时对照

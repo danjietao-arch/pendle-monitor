@@ -155,6 +155,11 @@ def main(argv: list[str] | None = None) -> int:
     daily.add_argument("--as-of", default=None)
     daily.add_argument("--season", default=None)
     daily.add_argument("--source", choices=("auto", "archive", "live"), default="auto")
+    stage4 = sub.add_parser("stage4-simulate")
+    stage4.add_argument("--draws", type=int, default=40)
+    stage4.add_argument("--seed", type=int, default=0)
+    stage4.add_argument("--demo-season", default="2024-25")
+    stage4.add_argument("--probe-live", action="store_true")
 
     args = parser.parse_args(argv)
     if args.cmd == "selftest":
@@ -264,5 +269,32 @@ def main(argv: list[str] | None = None) -> int:
             }
         )
         return 0 if result.get("status") in {"success", "already_done"} else 1
+    if args.cmd == "stage4-simulate":
+        from nba_mvp.stage4 import run_stage4
+
+        conn = _connection(cfg)
+        try:
+            result = run_stage4(
+                cfg,
+                conn,
+                draws=args.draws,
+                seed=args.seed,
+                demo=args.demo_season,
+                probe_live=args.probe_live,
+            )
+        finally:
+            conn.close()
+        print(
+            {
+                "status": result.get("status"),
+                "primary": result.get("primary"),
+                "promoted": result.get("promoted"),
+                "reason": result.get("reason"),
+                "board": result.get("board"),
+                "report": result.get("report"),
+                "live_target": result.get("live_target"),
+            }
+        )
+        return 0 if result.get("status") in {"ok", "待采集"} else 1
     parser.error(f"未知命令: {args.cmd}")
     return 2

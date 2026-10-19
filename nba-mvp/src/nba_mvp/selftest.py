@@ -1038,6 +1038,176 @@ def _scheduled(game_id, game_date):
     }
 
 
+def test_stage4_monte_carlo_and_board():
+    from nba_mvp.model.baseline import _fit_pipeline
+    from nba_mvp.model.montecarlo import (
+        earlier_season_rows,
+        fit_shrinkage_schedule,
+        games_still_needed,
+        promotion_decision,
+        shrinkage_weight,
+        simulate_remainder,
+        totals_as_of,
+        with_extra_absences,
+    )
+    from nba_mvp.report.dashboard import render_research_board
+    from nba_mvp.snapshot import OTHER_ID
+
+    played = {"game_id": "past", "game_date": "2024-01-01", "pts": 10, "reb": 1, "ast": 1, "stl": 0, "blk": 0, "tov": 0, "fgm": 4, "fga": 8, "ftm": 2, "fta": 2, "minutes": 30}
+    future = {"game_id": "future", "game_date": "2024-02-01", "pts": 80, "reb": 1, "ast": 1, "stl": 0, "blk": 0, "tov": 0, "fgm": 20, "fga": 30, "ftm": 10, "fta": 12, "minutes": 40}
+    visible = totals_as_of([played, future], "2024-01-15")
+    assert visible["games_played"] == 1
+    assert visible["pts"] == 10
+    assert earlier_season_rows(
+        [{"season": "2098-99", "player_id": "A"}, {"season": "2099-00", "player_id": "A"}, {"season": "2100-01", "player_id": "A"}],
+        "2099-00",
+    ) == [{"season": "2098-99", "player_id": "A"}]
+    samples = []
+    for _ in range(10):
+        samples.append({"games_played": 5, "season_avg": 30, "prior": 10, "final_avg": 12})
+        samples.append({"games_played": 60, "season_avg": 30, "prior": 10, "final_avg": 28})
+    schedule = fit_shrinkage_schedule(samples)
+    assert schedule is not None
+    assert shrinkage_weight(schedule, 5) < shrinkage_weight(schedule, 60)
+    assert shrinkage_weight(schedule, 20) < 1
+    rule = {"status": "verified", "min_games": 65, "stat_leaderboard_minimum_games": 58}
+    assert games_still_needed(rule, 58) == 7
+    assert games_still_needed({"status": "unverified", "min_games": None, "stat_leaderboard_minimum_games": 58}, 10) is None
+
+    def labeled(player_id, winner, pts, season):
+        return {
+            "season": season,
+            "snapshot_key": "end",
+            "player_id": player_id,
+            "award_winner": winner,
+            "eligibility_status": "unknown",
+            "player_features": {
+                "pts_per_game": pts,
+                "reb_per_game": 5,
+                "ast_per_game": 5,
+                "stl_per_game": 1,
+                "blk_per_game": 1,
+                "tov_per_game": 2,
+                "prior_pts_per_game": pts,
+                "prior_games": 70,
+                "prior_win_pct": 0.6,
+            },
+            "team_features": {"win_pct": 0.7 if winner else 0.4, "prior_win_pct": 0.6},
+            "games_played": 70,
+        }
+
+    train = []
+    for season in ("2096-97", "2097-98"):
+        train.append(labeled("A", 1, 30, season))
+        train.append(labeled("B", 0, 12, season))
+        train.append(labeled(OTHER_ID, 0, 8, season))
+    model = _fit_pipeline(train)
+    assert model is not None
+
+    def player(player_id, pts, games, remaining, official=None):
+        return {
+            "player_id": player_id,
+            "player_name": "Alpha" if player_id == "A" else player_id,
+            "team_abbr": "T1" if player_id == "A" else "T2",
+            "team_id": "T1" if player_id == "A" else "T2",
+            "games_played": games,
+            "pts_per_game": pts,
+            "reb_per_game": 5,
+            "ast_per_game": 5,
+            "stl_per_game": 1,
+            "blk_per_game": 1,
+            "tov_per_game": 2,
+            "prior_pts_per_game": 18,
+            "prior_games": 60,
+            "prior_win_pct": 0.55,
+            "wins": 20,
+            "team_games": max(games, 1),
+            "win_pct": 0.6,
+            "remaining_games": remaining,
+            "remaining_team_games": remaining,
+            "attend_p": 0.9,
+            "official_eligible": official,
+        }
+
+    other = {"player_id": OTHER_ID, "player_name": "其他球员", "games_played": 0, "remaining_games": 0, "remaining_team_games": 0}
+    roster = [player("A", 28, 30, 40), player("B", 14, 30, 40), other]
+    first = simulate_remainder(roster, schedule, [model], {"status": "unverified", "min_games": None}, draws=30, seed=7)
+    second = simulate_remainder(roster, schedule, [model], {"status": "unverified", "min_games": None}, draws=30, seed=7)
+    assert first["status"] == "ok", first
+    assert first["probabilities"] == second["probabilities"]
+    assert first["zero_filled"] is False
+    assert abs(sum(first["probabilities"].values()) - 1) < 1e-9
+    assert OTHER_ID in first["probabilities"]
+    assert first["p_eligibility"]["A"] is None
+    assert first["p_games_threshold"]["A"] is None
+    assert first["probabilities"]["A"] > 0
+    verified = simulate_remainder(
+        [player("A", 28, 60, 0), player("B", 14, 70, 0, official=0), other],
+        schedule,
+        [model],
+        rule,
+        draws=20,
+        seed=3,
+    )
+    assert verified["status"] == "ok", verified
+    assert verified["p_games_threshold"]["A"] == 0
+    assert verified["p_eligibility"]["A"] is None
+    assert verified["probabilities"]["A"] > 0
+    assert verified["p_eligibility"]["B"] == 0
+    assert verified["probabilities"]["B"] == 0
+    missing = simulate_remainder(
+        [{**player("A", 28, 30, 40), "remaining_games": None}, other],
+        schedule,
+        [model],
+        None,
+        draws=5,
+        seed=1,
+    )
+    assert missing["status"] == "待采集"
+    assert missing["probabilities"] is None
+    assert with_extra_absences(roster, "A", 10)[0]["remaining_games"] == 30
+    assert with_extra_absences([{**player("A", 28, 30, 40), "remaining_games": None}], "A", 10) is None
+    held_back = promotion_decision([1.2, 1.1, 1.0], [0.4, 0.5, 0.45], [0.2, 0.2, 0.2], [0.05, 0.05, 0.05], synthetic=False)
+    assert held_back["promoted"] is False
+    assert held_back["primary"] == "baseline_b"
+    promoted = promotion_decision([0.2, 0.2, 0.2], [0.8, 0.9, 1.0], [0.02, 0.02, 0.02], [0.2, 0.2, 0.2], synthetic=False)
+    assert promoted["promoted"] is True
+    assert promoted["primary"] == "monte_carlo"
+    assert promotion_decision([0.1, 0.1, 0.1], [0.8, 0.8, 0.8], [0.01, 0.01, 0.01], [0.2, 0.2, 0.2], synthetic=True)["promoted"] is False
+    disabled = run_monte_carlo(load_config(), {"beats_baseline": True, "mc_promoted": True}, [{"player_id": "A"}], 0.5)
+    assert disabled["status"] == "disabled"
+    assert disabled["probabilities"] is None
+    board = render_research_board(
+        live_rows=[{"player_id": "A", "player_name": "Alpha", "team_abbr": "T", "p_award": 0.5, "p_eligibility": None, "reasons": ["真实预测"]}],
+        scenario_rows=[{"player_id": "A", "player_name": "Alpha", "team_abbr": "T", "p_award": 0.1, "p_eligibility": None, "reasons": ["再缺席 10 场", "这不是真实预测"]}],
+        curve=[{"player_id": "A", "player_name": "Alpha", "values": [0.2, None, 0.4]}],
+        data_status="ok",
+        model_version="baseline_b",
+        as_of="2025-01-15",
+        season="2024-25 历史重放",
+        gate={"primary": "baseline_b", "promoted": False, "reason": "默认仍是基线 B"},
+    )
+    live, scenario = board.split("data-kind='scenario'", 1)
+    assert "真实预测" in live
+    assert "再缺席 10 场" not in live
+    assert "50.0%" in live
+    assert "这不是真实预测" in scenario
+    assert "10.0%" in scenario
+    assert "50.0%" not in scenario
+    stale = render_research_board(
+        live_rows=[],
+        scenario_rows=[],
+        curve=[],
+        data_status="STALE",
+        model_version="baseline_b",
+        as_of="2026-10-19",
+        season="2026-27",
+        gate={"primary": "baseline_b", "promoted": False, "reason": "待采集"},
+        collection_note="HTTP 403",
+    )
+    assert "STALE" in stale and "待采集" in stale
+
+
 def test_stage3_daily_incremental(tmp_path):
     from datetime import date, timedelta
 
@@ -1175,6 +1345,7 @@ def main() -> int:
         test_walk_forward_reproducible_and_not_worse,
         test_stage2_archive_backtest,
         test_stage3_daily_incremental,
+        test_stage4_monte_carlo_and_board,
         test_vote_and_gamelog_parsers,
         test_quote_book_and_future_backfill,
         test_delta_alerts_and_normalization,
