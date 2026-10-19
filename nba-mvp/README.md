@@ -19,6 +19,20 @@ PYTHONPATH=src python -m nba_mvp dashboard
 
 `stats.nba.com` 经常拒绝云主机。抓取失败会保留上一份数据并标 `STALE`，不会把缺失填成 0。GitHub Actions 的定时任务可能延迟或跳过，工作流在每小时第 17 分钟触发。
 
+## Stage 1：三季可重放样例
+
+样例赛季是 2022—23、2023—24、2024—25。逐场来自 NBA.com 官方箱分页，赛程来自 data.nba.com，投票来自 NBA Communications。三季样本低于训练门禁，不会输出 2026—27 球员概率，状态保持「待训练」。
+
+```bash
+PYTHONPATH=src python3 -m nba_mvp stage1-fetch
+PYTHONPATH=src python3 -m nba_mvp stage1-replay
+PYTHONPATH=src python3 -m nba_mvp selftest
+```
+
+`stage1-fetch` 把原始响应写到 `data/archive/stage1/`。箱分失败会留下错误记录，不补造球员数据。`stage1-replay` 只读这些存档，重建比赛、投票和赛前 / 球队 10、20、40、60 场 / 赛季结束快照，并写 `data/reports/stage1_summary.json`。自检会拒绝中期快照里的未来比赛，并核对 `source_timestamp` 能追溯到存档。字段说明在 `docs/data_dictionary.md`。
+
+已知缺口：2024—25 的 `0022401084`（2025-03-30，活塞客场对森林狼）在 `www.nba.com` 上持续返回 Access Denied。该场球队比分仍在赛程存档里，球员逐场缺失，没有填 0。
+
 ## 市场
 
 `data/registry/market_registry.json` 一开始是空的。程序只会把 Gamma 搜索结果放进待审核队列。总决赛 MVP、错误赛季、未人工确认的市场不会进入对照。审核通过后手工写入注册表，每名球员只保留一个主市场。

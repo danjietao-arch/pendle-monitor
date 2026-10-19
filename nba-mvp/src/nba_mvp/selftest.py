@@ -7,6 +7,12 @@ from datetime import timedelta
 from pathlib import Path
 
 from nba_mvp.collect.nba_stats import _upsert_games, parse_player_gamelogs, parse_team_gamelogs
+from nba_mvp.collect.official import (
+    parse_boxscore_players,
+    parse_schedule,
+    parse_voter_ballot_text,
+    parse_voting_results_text,
+)
 from nba_mvp.collect.votes import parse_vote_html
 from nba_mvp.config import load_config, project_path
 from nba_mvp.db import connect
@@ -93,6 +99,39 @@ def test_leakage():
     assert alpha_pre["games_played"] == 0
 
 
+def test_trade_cutoff_does_not_use_future_team():
+    games = [
+        {**_game("A", "T1", "g1", "2098-11-01", 10), "source_timestamp": "2098-11-02T00:00:00Z"},
+        {**_game("A", "T2", "g2", "2098-12-01", 100), "source_timestamp": "2098-12-02T00:00:00Z"},
+    ]
+    teams = [
+        {**_team("T1", "g1", "2098-11-01"), "source_timestamp": "2098-11-02T00:00:00Z"},
+        {**_team("T1", "g1b", "2098-11-03"), "source_timestamp": "2098-11-04T00:00:00Z"},
+        {**_team("T2", "g2a", "2098-11-05"), "source_timestamp": "2098-11-06T00:00:00Z"},
+        {**_team("T2", "g2", "2098-12-01"), "source_timestamp": "2098-12-02T00:00:00Z"},
+    ]
+    rows = build_snapshot_rows(
+        season="2098-99",
+        snapshot_key="tg_1",
+        games=games,
+        team_games=teams,
+        prior_games=[],
+        votes=[{"player_id": "A", "is_winner": 1}],
+        players={"A": {"player_id": "A", "player_name": "Alpha", "team_id": "T2"}},
+        min_minutes=0,
+        rule={"season": "2098-99", "status": "unverified"},
+        season_start="2098-10-20",
+    )
+    alpha = next(row for row in rows if row["player_id"] == "A")
+    assert alpha["team_id"] == "T1"
+    assert alpha["snapshot_date"] == "2098-11-01"
+    assert alpha["player_features"]["pts"] == 10
+    assert alpha["player_features"]["game_ids"] == ["g1"]
+    assert alpha["team_games"] == 1
+    assert alpha["source_timestamp"] == "2098-11-02T00:00:00Z"
+    assert alpha["source_timestamp"] != "2098-12-02T00:00:00Z"
+
+
 def test_unverified_eligibility_not_zero():
     rules = load_rules(project_path(load_config(), "rules"))
     result = eligibility_for(rules["2026-27"], games_played=1, official_eligible=None)
@@ -101,6 +140,187 @@ def test_unverified_eligibility_not_zero():
     verified = eligibility_for(rules["2025-26"], games_played=10, official_eligible=0)
     assert verified["force_award_zero"] is True
     assert verified["p_eligibility"] == 0
+
+
+def test_official_vote_and_boxscore_parsers():
+    results = parse_voting_results_text(
+        "\n".join(
+            [
+                "Player, Team 1st Place Votes (10 points) 2nd Place Votes (7 points) Total Points",
+                "Joel Embiid, Philadelphia 73 25 2 0 0 915",
+                "Nikola Jokić, Denver 15 52 32 0 0 674",
+            ]
+        )
+    )
+    assert results[0]["player_name"] == "Joel Embiid"
+    assert results[0]["is_winner"] == 1
+    assert results[0]["vote_points"] == 915
+    assert results[1]["vote_points"] == 674
+    try:
+        parse_voting_results_text("Joel Embiid, Philadelphia 73 25 2 0 0 1")
+        raise AssertionError("票数与总分不一致时不应接受")
+    except DataError:
+        pass
+    ballots = parse_voter_ballot_text(
+        "David Aldridge, The Athletic"
+        "    Shai Gilgeous-Alexander, Oklahoma City"
+        "    Nikola Jokić, Denver"
+        "    Giannis Antetokounmpo, Milwaukee"
+        "    Jayson Tatum, Boston"
+        "    Donovan Mitchell, Cleveland\n"
+    )
+    shai = next(row for row in ballots if row["player_name"] == "Shai Gilgeous-Alexander")
+    jokic = next(row for row in ballots if row["player_name"] == "Nikola Jokić")
+    assert shai["is_winner"] == 1
+    assert shai["vote_points"] == 10
+    assert shai["first_place_votes"] == 1
+    assert jokic["vote_points"] == 7
+    assert jokic["is_winner"] == 0
+    schedule = parse_schedule(
+        {
+            "lscd": [
+                {
+                    "mscd": {
+                        "g": [
+                            {
+                                "gid": "0022400001",
+                                "gdte": "2024-10-22",
+                                "stt": "Final",
+                                "h": {"tid": 1610612738, "ta": "BOS", "s": "116"},
+                                "v": {"tid": 1610612737, "ta": "ATL", "s": "100"},
+                            },
+                            {"gid": "0012400001", "gdte": "2024-10-10", "stt": "Final", "h": {}, "v": {}},
+                        ]
+                    }
+                }
+            ]
+        }
+    )
+    assert len(schedule) == 1
+    assert schedule[0]["home"]["win"] == 1
+    played, unparsed = parse_boxscore_players(
+        {
+            "gameId": "0022400001",
+            "gameStatus": 3,
+            "gameStatusText": "Final",
+            "homeTeam": {
+                "teamId": 1610612738,
+                "teamTricode": "BOS",
+                "players": [
+                    {
+                        "personId": 1627759,
+                        "firstName": "Jaylen",
+                        "familyName": "Brown",
+                        "position": "F",
+                        "comment": "",
+                        "statistics": {
+                            "minutes": "35:56",
+                            "points": 37,
+                            "reboundsTotal": 5,
+                            "assists": 2,
+                            "steals": 1,
+                            "blocks": 0,
+                            "turnovers": 6,
+                            "fieldGoalsMade": 14,
+                            "fieldGoalsAttempted": 22,
+                            "freeThrowsMade": 6,
+                            "freeThrowsAttempted": 10,
+                        },
+                    },
+                    {
+                        "personId": 204001,
+                        "firstName": "Kristaps",
+                        "familyName": "Porzingis",
+                        "position": "",
+                        "comment": "DNP - Injury",
+                        "statistics": {"minutes": None},
+                    },
+                ],
+            },
+            "awayTeam": {"teamId": 1610612737, "teamTricode": "ATL", "players": []},
+        },
+        schedule[0],
+    )
+    assert unparsed == []
+    assert len(played) == 1
+    assert played[0]["player_id"] == "1627759"
+    assert played[0]["game_date"] == "2024-10-22"
+    assert played[0]["minutes"] == 35 + 56 / 60
+    assert played[0]["opponent"] == "ATL"
+    assert played[0]["started"] == 1
+    from nba_mvp.stage1 import resolve_vote_player_id
+
+    names = {
+        "jimmy butler iii": ["202710"],
+        "john butler jr.": ["1631219"],
+        "jared butler": ["1630215"],
+    }
+    assert resolve_vote_player_id("Jimmy Butler", names) == "202710"
+    try:
+        resolve_vote_player_id("Chris Paul", names)
+        raise AssertionError("没有对应球员时不应猜测")
+    except DataError:
+        pass
+
+
+def test_stage1_archive_replay(tmp_path):
+    from nba_mvp.stage1 import STAGE1_SEASONS, replay_stage1
+
+    cfg = load_config()
+    archive = project_path(cfg, "archive")
+    assert (archive / "manifest.json").exists(), "缺少 Stage 1 原始存档"
+    cfg = dict(cfg)
+    cfg["paths"] = dict(cfg["paths"])
+    cfg["paths"]["reports"] = str(tmp_path / "reports")
+    conn = connect(tmp_path / "mvp.sqlite")
+    try:
+        summary = replay_stage1(cfg, conn, list(STAGE1_SEASONS))
+        _assert_stage1_summary(conn, summary)
+    finally:
+        conn.close()
+
+
+def _assert_stage1_summary(conn, summary):
+    assert summary["model_status"] == "待训练"
+    assert summary["target_season_probabilities"] == "待采集 / 待训练"
+    assert summary["leakage_ok"] is True
+    winners = {}
+    for item in summary["seasons"]:
+        assert item["schedule_games"] == 1230
+        failed_ids = [game["game_id"] for game in item["failed_games"]]
+        if item["season"] == "2024-25":
+            assert failed_ids == ["0022401084"]
+            team_rows = conn.execute(
+                "SELECT COUNT(*) AS n FROM team_results WHERE season = ? AND game_id = ?",
+                ("2024-25", "0022401084"),
+            ).fetchone()["n"]
+            player_rows = conn.execute(
+                "SELECT COUNT(*) AS n FROM game_logs WHERE season = ? AND game_id = ?",
+                ("2024-25", "0022401084"),
+            ).fetchone()["n"]
+            assert team_rows == 2
+            assert player_rows == 0
+        else:
+            assert failed_ids == []
+        assert item["unparsed_players"] == []
+        assert item["votes"] == "ok"
+        assert item["leakage_problems"] == []
+        winners[item["season"]] = item["winner"]
+        brief = item["snapshots_brief"]
+        assert brief["preseason"]["award_winner"]["games_played"] == 0
+        assert brief["preseason"]["award_winner"]["team_games"] == 0
+        mid = brief["tg_10"]["award_winner"]
+        end = brief["end"]["award_winner"]
+        assert mid["team_games"] >= 10
+        assert mid["team_games"] < end["team_games"]
+        assert mid["source_timestamp"]
+        assert end["source_timestamp"]
+        assert mid["games_played"] < end["games_played"]
+    assert winners == {
+        "2022-23": "Joel Embiid",
+        "2023-24": "Nikola Jokić",
+        "2024-25": "Shai Gilgeous-Alexander",
+    }
 
 
 def test_vote_and_gamelog_parsers():
@@ -570,7 +790,10 @@ def main() -> int:
 
     tests = [
         test_leakage,
+        test_trade_cutoff_does_not_use_future_team,
         test_unverified_eligibility_not_zero,
+        test_official_vote_and_boxscore_parsers,
+        test_stage1_archive_replay,
         test_vote_and_gamelog_parsers,
         test_quote_book_and_future_backfill,
         test_delta_alerts_and_normalization,
@@ -592,6 +815,7 @@ def main() -> int:
                 test_retry_and_hourly_idempotency,
                 test_hourly_rows_idempotent,
                 test_upsert_does_not_replace_with_null,
+                test_stage1_archive_replay,
             }:
                 with tempfile.TemporaryDirectory() as folder:
                     test(Path(folder))

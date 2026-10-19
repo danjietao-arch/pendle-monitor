@@ -122,6 +122,33 @@ def _latest_team(games: list[dict]) -> tuple[str | None, str | None]:
     return ordered[-1].get("team_id"), ordered[-1].get("team_abbr")
 
 
+def player_cutoff(player_games: list[dict], team_games: list[dict], snapshot_key: str, season_start: str | None):
+    """Cutoff date and team using only games knowable by that date.
+
+    A later trade cannot move an earlier snapshot onto the destination team.
+    """
+    if snapshot_key == "preseason":
+        return season_start, None, None
+    ordered = sorted(player_games, key=lambda game: (game["game_date"], str(game.get("game_id"))))
+    teams: list[str] = []
+    for game in ordered:
+        team_id = game.get("team_id")
+        if team_id and str(team_id) not in teams:
+            teams.append(str(team_id))
+    valid = []
+    for team_id in teams:
+        date = cutoff_date(team_games, team_id, snapshot_key, season_start)
+        if not date:
+            continue
+        visible = [game for game in ordered if game.get("team_id") and game["game_date"] <= date]
+        if not visible or str(visible[-1].get("team_id")) != team_id:
+            continue
+        valid.append((date, team_id, visible[-1].get("team_abbr")))
+    if not valid:
+        return None, None, None
+    return max(valid)
+
+
 def _labels(candidate_ids: set[str], votes: list[dict]) -> dict[str, int] | None:
     winners = [str(vote["player_id"]) for vote in votes if vote.get("is_winner")]
     if len(winners) != 1:
@@ -156,23 +183,30 @@ def build_snapshot_rows(
         raise ValueError("赛前快照需要 season_start")
     official_eligible = official_eligible or {}
     injury_status = injury_status or {}
-    minutes_by_player: dict[str, float] = {}
-    known_players = set(players) | {str(game["player_id"]) for game in games} | {str(game["player_id"]) for game in prior_games}
+    games_by_player: dict[str, list[dict]] = {}
+    for game in games:
+        games_by_player.setdefault(str(game["player_id"]), []).append(game)
+    prior_by_player: dict[str, list[dict]] = {}
+    for game in prior_games:
+        prior_by_player.setdefault(str(game["player_id"]), []).append(game)
+    known_players = set(players) | set(games_by_player) | set(prior_by_player)
     known_players.discard(OTHER_ID)
-    team_by_player: dict[str, str] = {}
-    for game in list(prior_games) + list(games):
-        if game.get("team_id"):
-            team_by_player[str(game["player_id"])] = str(game["team_id"])
 
     candidates = set(extra_player_ids or [])
     for vote in votes:
         if vote.get("player_id"):
             candidates.add(str(vote["player_id"]))
 
-    def absorb_minutes(source: list[dict], as_of_for_player) -> None:
+    def as_of_current(player_id: str):
+        date, _team_id, _abbr = player_cutoff(
+            games_by_player.get(player_id, []), team_games, snapshot_key, season_start
+        )
+        return date
+
+    def absorb_minutes(source_by_player: dict[str, list[dict]], as_of_for_player) -> None:
         for player_id in known_players:
             as_of = as_of_for_player(player_id)
-            visible = _filter_games(source, player_id, as_of)
+            visible = _filter_games(source_by_player.get(player_id, []), player_id, as_of)
             total = 0.0
             complete = True
             for game in visible:
@@ -183,25 +217,18 @@ def build_snapshot_rows(
             if complete and total >= min_minutes:
                 candidates.add(player_id)
 
-    def as_of_current(player_id: str):
-        team_id = team_by_player.get(player_id) or (players.get(player_id) or {}).get("team_id")
-        if snapshot_key == "preseason":
-            return season_start
-        if not team_id:
-            return None
-        return cutoff_date(team_games, str(team_id), snapshot_key, season_start)
-
     if snapshot_key == "preseason":
-        absorb_minutes(prior_games, lambda _player_id: season_start)
+        absorb_minutes(prior_by_player, lambda _player_id: season_start)
     else:
-        absorb_minutes(games, as_of_current)
-        absorb_minutes(prior_games, as_of_current)
+        absorb_minutes(games_by_player, as_of_current)
+        absorb_minutes(prior_by_player, as_of_current)
     candidates.add(OTHER_ID)
 
     labels = _labels(candidates, votes)
     rows = []
     for player_id in sorted(candidates, key=lambda value: (value == OTHER_ID, value)):
         profile = players.get(player_id, {})
+        row_stamp = source_timestamp
         if player_id == OTHER_ID:
             snapshot_date = season_start if snapshot_key == "preseason" else None
             dated = [row["snapshot_date"] for row in rows if row.get("snapshot_date")]
@@ -216,16 +243,21 @@ def build_snapshot_rows(
             team_abbr = None
             games_played = 0
         else:
-            team_id = team_by_player.get(player_id) or profile.get("team_id")
-            snapshot_date = as_of_current(player_id)
+            snapshot_date, cutoff_team, _cutoff_abbr = player_cutoff(
+                games_by_player.get(player_id, []), team_games, snapshot_key, season_start
+            )
             if snapshot_key != "preseason" and snapshot_date is None:
                 continue
             if snapshot_key == "preseason":
                 snapshot_date = season_start
                 visible = []
             else:
-                visible = _filter_games(games, player_id, snapshot_date)
-            prior_visible = _filter_games(prior_games, player_id, snapshot_date)
+                visible = _filter_games(games_by_player.get(player_id, []), player_id, snapshot_date)
+            prior_visible = _filter_games(prior_by_player.get(player_id, []), player_id, snapshot_date)
+            if snapshot_key == "preseason":
+                team_id, _prior_abbr = _latest_team(prior_visible)
+            else:
+                team_id = cutoff_team
             player_features = aggregate_player_games(visible)
             prior_features = aggregate_player_games(prior_visible)
             player_features["prior_pts_per_game"] = prior_features.get("pts_per_game")
@@ -245,6 +277,10 @@ def build_snapshot_rows(
                 match = next(game for game in visible if str(game["game_id"]) == str(game_id))
                 if match["game_date"] > snapshot_date:
                     raise AssertionError("快照泄漏了未来比赛")
+            contributed = list(visible) + list(prior_visible) + list(team_visible)
+            stamps = [game.get("source_timestamp") for game in contributed if game.get("source_timestamp")]
+            if stamps:
+                row_stamp = max(stamps)
         official = official_eligible.get(player_id)
         if official is not None:
             official = int(official)
@@ -267,7 +303,7 @@ def build_snapshot_rows(
                 "official_eligible": official,
                 "eligibility_status": eligibility["eligibility_status"],
                 "award_winner": None if labels is None else labels.get(player_id, 0),
-                "source_timestamp": source_timestamp,
+                "source_timestamp": row_stamp,
                 "eligibility_reason": eligibility["reason"],
                 "p_eligibility": eligibility["p_eligibility"],
                 "force_award_zero": eligibility["force_award_zero"],
@@ -359,10 +395,6 @@ def build_season_snapshots(conn, cfg: dict, season: str, *, season_start: str | 
         start = min(game["game_date"] for game in games)
     prior_label = previous_season_label(season)
     prior_games = _load_games(conn, prior_label) if prior_label else []
-    source_timestamp = None
-    stamps = [game["source_timestamp"] for game in games if game.get("source_timestamp")]
-    if stamps:
-        source_timestamp = max(stamps)
     from nba_mvp.eligibility import load_rules
     from nba_mvp.config import project_path
 
@@ -383,7 +415,6 @@ def build_season_snapshots(conn, cfg: dict, season: str, *, season_start: str | 
             min_minutes=float(cfg["candidate_min_minutes"]),
             rule=rule,
             season_start=start,
-            source_timestamp=source_timestamp,
         )
         save_snapshots(conn, rows)
         written += 1

@@ -1,0 +1,384 @@
+{
+  "stage": 1,
+  "model_version": null,
+  "model_status": "待训练",
+  "target_season_probabilities": "待采集 / 待训练",
+  "seasons": [
+    {
+      "season": "2022-23",
+      "season_start": "2022-10-17",
+      "schedule_games": 1230,
+      "failed_games": [],
+      "unparsed_players": [],
+      "votes": "ok",
+      "vote_error": null,
+      "vote_rows": 13,
+      "winner": "Joel Embiid",
+      "snapshots": {
+        "status": "ok",
+        "season": "2022-23",
+        "snapshots": 6
+      },
+      "leakage_problems": [],
+      "snapshots_brief": {
+        "preseason": {
+          "rows": 14,
+          "snapshot_date_min": "2022-10-17",
+          "snapshot_date_max": "2022-10-17",
+          "award_winner": {
+            "player_id": "203954",
+            "player_name": "Joel Embiid",
+            "games_played": 0,
+            "team_games": 0,
+            "team_abbr": "PHI",
+            "pts_per_game": null,
+            "win_pct": null,
+            "source_timestamp": null,
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "tg_10": {
+          "rows": 178,
+          "snapshot_date_min": "2022-11-04",
+          "snapshot_date_max": "2022-11-09",
+          "award_winner": {
+            "player_id": "203954",
+            "player_name": "Joel Embiid",
+            "games_played": 6,
+            "team_games": 10,
+            "team_abbr": "PHI",
+            "pts_per_game": 27.166666666666668,
+            "win_pct": 0.4,
+            "source_timestamp": "2026-10-19T11:10:36Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "tg_20": {
+          "rows": 295,
+          "snapshot_date_min": "2022-11-23",
+          "snapshot_date_max": "2022-11-30",
+          "award_winner": {
+            "player_id": "203954",
+            "player_name": "Joel Embiid",
+            "games_played": 12,
+            "team_games": 20,
+            "team_abbr": "PHI",
+            "pts_per_game": 32.25,
+            "win_pct": 0.55,
+            "source_timestamp": "2026-10-19T11:11:05Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "tg_40": {
+          "rows": 378,
+          "snapshot_date_min": "2023-01-02",
+          "snapshot_date_max": "2023-01-11",
+          "award_winner": {
+            "player_id": "203954",
+            "player_name": "Joel Embiid",
+            "games_played": 29,
+            "team_games": 40,
+            "team_abbr": "PHI",
+            "pts_per_game": 33.58620689655172,
+            "win_pct": 0.625,
+            "source_timestamp": "2026-10-19T11:12:11Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "tg_60": {
+          "rows": 409,
+          "snapshot_date_min": "2023-02-13",
+          "snapshot_date_max": "2023-02-28",
+          "award_winner": {
+            "player_id": "203954",
+            "player_name": "Joel Embiid",
+            "games_played": 48,
+            "team_games": 60,
+            "team_abbr": "PHI",
+            "pts_per_game": 33.0,
+            "win_pct": 0.65,
+            "source_timestamp": "2026-10-19T11:12:11Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "end": {
+          "rows": 432,
+          "snapshot_date_min": "2023-04-09",
+          "snapshot_date_max": "2023-04-09",
+          "award_winner": {
+            "player_id": "203954",
+            "player_name": "Joel Embiid",
+            "games_played": 66,
+            "team_games": 82,
+            "team_abbr": "PHI",
+            "pts_per_game": 33.07575757575758,
+            "win_pct": 0.6585365853658537,
+            "source_timestamp": "2026-10-19T11:12:11Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        }
+      }
+    },
+    {
+      "season": "2023-24",
+      "season_start": "2023-10-23",
+      "schedule_games": 1230,
+      "failed_games": [],
+      "unparsed_players": [],
+      "votes": "ok",
+      "vote_error": null,
+      "vote_rows": 9,
+      "winner": "Nikola Jokić",
+      "snapshots": {
+        "status": "ok",
+        "season": "2023-24",
+        "snapshots": 6
+      },
+      "leakage_problems": [],
+      "snapshots_brief": {
+        "preseason": {
+          "rows": 432,
+          "snapshot_date_min": "2023-10-23",
+          "snapshot_date_max": "2023-10-23",
+          "award_winner": {
+            "player_id": "203999",
+            "player_name": "Nikola Jokić",
+            "games_played": 0,
+            "team_games": 0,
+            "team_abbr": "DEN",
+            "pts_per_game": null,
+            "win_pct": null,
+            "source_timestamp": "2026-10-19T11:12:09Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "tg_10": {
+          "rows": 370,
+          "snapshot_date_min": "2023-11-10",
+          "snapshot_date_max": "2023-11-17",
+          "award_winner": {
+            "player_id": "203999",
+            "player_name": "Nikola Jokić",
+            "games_played": 10,
+            "team_games": 10,
+            "team_abbr": "DEN",
+            "pts_per_game": 29.8,
+            "win_pct": 0.8,
+            "source_timestamp": "2026-10-19T11:14:58Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "tg_20": {
+          "rows": 393,
+          "snapshot_date_min": "2023-11-30",
+          "snapshot_date_max": "2023-12-11",
+          "award_winner": {
+            "player_id": "203999",
+            "player_name": "Nikola Jokić",
+            "games_played": 19,
+            "team_games": 20,
+            "team_abbr": "DEN",
+            "pts_per_game": 28.57894736842105,
+            "win_pct": 0.7,
+            "source_timestamp": "2026-10-19T11:15:24Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "tg_40": {
+          "rows": 423,
+          "snapshot_date_min": "2024-01-12",
+          "snapshot_date_max": "2024-01-20",
+          "award_winner": {
+            "player_id": "203999",
+            "player_name": "Nikola Jokić",
+            "games_played": 39,
+            "team_games": 40,
+            "team_abbr": "DEN",
+            "pts_per_game": 25.53846153846154,
+            "win_pct": 0.675,
+            "source_timestamp": "2026-10-19T11:16:01Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "tg_60": {
+          "rows": 439,
+          "snapshot_date_min": "2024-02-28",
+          "snapshot_date_max": "2024-03-04",
+          "award_winner": {
+            "player_id": "203999",
+            "player_name": "Nikola Jokić",
+            "games_played": 58,
+            "team_games": 60,
+            "team_abbr": "DEN",
+            "pts_per_game": 25.79310344827586,
+            "win_pct": 0.6833333333333333,
+            "source_timestamp": "2026-10-19T11:16:01Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "end": {
+          "rows": 465,
+          "snapshot_date_min": "2024-04-14",
+          "snapshot_date_max": "2024-04-14",
+          "award_winner": {
+            "player_id": "203999",
+            "player_name": "Nikola Jokić",
+            "games_played": 79,
+            "team_games": 82,
+            "team_abbr": "DEN",
+            "pts_per_game": 26.39240506329114,
+            "win_pct": 0.6951219512195121,
+            "source_timestamp": "2026-10-19T11:16:01Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        }
+      }
+    },
+    {
+      "season": "2024-25",
+      "season_start": "2024-10-21",
+      "schedule_games": 1230,
+      "failed_games": [
+        {
+          "game_id": "0022401084",
+          "error": "HTTP 500 Access Denied from www.nba.com for DET @ MIN on 2025-03-30 after numeric and slug URLs. Team score stays in the schedule archive. Player lines for this game are missing."
+        }
+      ],
+      "unparsed_players": [],
+      "votes": "ok",
+      "vote_error": null,
+      "vote_rows": 12,
+      "winner": "Shai Gilgeous-Alexander",
+      "snapshots": {
+        "status": "ok",
+        "season": "2024-25",
+        "snapshots": 6
+      },
+      "leakage_problems": [],
+      "snapshots_brief": {
+        "preseason": {
+          "rows": 437,
+          "snapshot_date_min": "2024-10-21",
+          "snapshot_date_max": "2024-10-21",
+          "award_winner": {
+            "player_id": "1628983",
+            "player_name": "Shai Gilgeous-Alexander",
+            "games_played": 0,
+            "team_games": 0,
+            "team_abbr": "OKC",
+            "pts_per_game": null,
+            "win_pct": null,
+            "source_timestamp": "2026-10-19T11:27:57Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "tg_10": {
+          "rows": 352,
+          "snapshot_date_min": "2024-11-08",
+          "snapshot_date_max": "2024-11-13",
+          "award_winner": {
+            "player_id": "1628983",
+            "player_name": "Shai Gilgeous-Alexander",
+            "games_played": 10,
+            "team_games": 10,
+            "team_abbr": "OKC",
+            "pts_per_game": 26.1,
+            "win_pct": 0.8,
+            "source_timestamp": "2026-10-19T11:27:57Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "tg_20": {
+          "rows": 392,
+          "snapshot_date_min": "2024-11-27",
+          "snapshot_date_max": "2024-12-05",
+          "award_winner": {
+            "player_id": "1628983",
+            "player_name": "Shai Gilgeous-Alexander",
+            "games_played": 20,
+            "team_games": 20,
+            "team_abbr": "OKC",
+            "pts_per_game": 29.95,
+            "win_pct": 0.75,
+            "source_timestamp": "2026-10-19T11:27:57Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "tg_40": {
+          "rows": 425,
+          "snapshot_date_min": "2025-01-10",
+          "snapshot_date_max": "2025-01-22",
+          "award_winner": {
+            "player_id": "1628983",
+            "player_name": "Shai Gilgeous-Alexander",
+            "games_played": 40,
+            "team_games": 40,
+            "team_abbr": "OKC",
+            "pts_per_game": 31.6,
+            "win_pct": 0.85,
+            "source_timestamp": "2026-10-19T11:27:57Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "tg_60": {
+          "rows": 458,
+          "snapshot_date_min": "2025-02-25",
+          "snapshot_date_max": "2025-03-04",
+          "award_winner": {
+            "player_id": "1628983",
+            "player_name": "Shai Gilgeous-Alexander",
+            "games_played": 59,
+            "team_games": 60,
+            "team_abbr": "OKC",
+            "pts_per_game": 32.30508474576271,
+            "win_pct": 0.8166666666666667,
+            "source_timestamp": "2026-10-19T11:28:11Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        },
+        "end": {
+          "rows": 486,
+          "snapshot_date_min": "2025-04-13",
+          "snapshot_date_max": "2025-04-13",
+          "award_winner": {
+            "player_id": "1628983",
+            "player_name": "Shai Gilgeous-Alexander",
+            "games_played": 76,
+            "team_games": 82,
+            "team_abbr": "OKC",
+            "pts_per_game": 32.68421052631579,
+            "win_pct": 0.8292682926829268,
+            "source_timestamp": "2026-10-19T11:28:11Z",
+            "injury_status": "unknown",
+            "official_eligible": null
+          }
+        }
+      }
+    }
+  ],
+  "leakage_ok": true,
+  "incomplete_games": {
+    "2022-23": [],
+    "2023-24": [],
+    "2024-25": [
+      "0022401084"
+    ]
+  }
+}

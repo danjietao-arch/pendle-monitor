@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from datetime import datetime, timedelta, timezone
 
 
@@ -73,7 +74,10 @@ def dumps(obj) -> str:
 
 
 def normalize_name(name: str) -> str:
-    return re.sub(r"\s+", " ", name or "").strip().casefold()
+    text = unicodedata.normalize("NFKD", name or "")
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    text = text.replace("’", "'").replace("‘", "'")
+    return re.sub(r"\s+", " ", text).strip().casefold()
 
 
 def normalize_season(text: str) -> str | None:

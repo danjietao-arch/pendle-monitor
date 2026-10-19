@@ -34,6 +34,7 @@
     "rules": "data/rules/eligibility_rules.json",
     "reports": "data/reports",
     "models": "data/models",
-    "fixtures": "data/fixtures"
+    "fixtures": "data/fixtures",
+    "archive": "data/archive/stage1"
   }
 }
