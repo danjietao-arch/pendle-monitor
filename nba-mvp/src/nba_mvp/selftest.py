@@ -991,6 +991,178 @@ def test_stage2_archive_backtest(tmp_path):
     assert plot.read_text(encoding="utf-8").startswith("<svg")
 
 
+def _box(game_id, team_id, player_id, points):
+    return {
+        "gameId": game_id,
+        "gameStatus": 3,
+        "gameStatusText": "Final",
+        "homeTeam": {
+            "teamId": team_id,
+            "teamTricode": team_id,
+            "score": 110,
+            "players": [
+                {
+                    "personId": player_id,
+                    "firstName": "Alpha",
+                    "familyName": "Player",
+                    "position": "F",
+                    "comment": "",
+                    "statistics": {
+                        "minutes": "30:00",
+                        "points": points,
+                        "reboundsTotal": 5,
+                        "assists": 5,
+                        "steals": 1,
+                        "blocks": 1,
+                        "turnovers": 2,
+                        "fieldGoalsMade": 10,
+                        "fieldGoalsAttempted": 20,
+                        "freeThrowsMade": 4,
+                        "freeThrowsAttempted": 5,
+                    },
+                }
+            ],
+        },
+        "awayTeam": {"teamId": "T2", "teamTricode": "T2", "score": 100, "players": []},
+    }
+
+
+def _scheduled(game_id, game_date):
+    return {
+        "game_id": game_id,
+        "game_date": game_date,
+        "schedule_final": True,
+        "schedule_status": "Final",
+        "home": {"team_id": "T1", "team_abbr": "T1", "points_for": 110, "points_against": 100, "win": 1},
+        "away": {"team_id": "T2", "team_abbr": "T2", "points_for": 100, "points_against": 110, "win": 0},
+    }
+
+
+def test_stage3_daily_incremental(tmp_path):
+    from datetime import date, timedelta
+
+    from nba_mvp.stage3 import WEEKLY_FIELDS, accept_injury_rows, projected_record_band, run_daily
+
+    assert projected_record_band(None, 10, 5, 0.5, 0.5) is None
+    band = projected_record_band(8, 10, 4, 0.6, 0.5)
+    assert band["low"] >= 8
+    assert band["high"] <= 12
+    accepted, rejected = accept_injury_rows(
+        [
+            {"player_id": "A", "status": "out", "source_url": "https://official.nba.com/injury-report"},
+            {"player_id": "B", "status": "out", "source_url": "https://rumor.example/mvp"},
+        ]
+    )
+    assert [row["player_id"] for row in accepted] == ["A"]
+    assert rejected[0]["reason"] == "未证实伤病，不入库，不置 0"
+    monday = date(2099, 11, 1)
+    while monday.weekday() != 0:
+        monday += timedelta(days=1)
+    second = monday + timedelta(days=7)
+    later = second + timedelta(days=7)
+    cfg = _temp_config(tmp_path, target_season="2099-00", min_historical_seasons=2, candidate_min_minutes=0)
+    conn = connect(tmp_path / "stage3.sqlite")
+    try:
+        _save_season(conn, "2097-98", 30, 12)
+        _save_season(conn, "2098-99", 28, 14)
+        trained = train_baselines(conn, cfg)
+        assert trained["status"] == "ok"
+        first_game = monday.isoformat()
+        second_game = second.isoformat()
+        future = (later + timedelta(days=3)).isoformat()
+        bundle = {
+            "status": "ok",
+            "schedule": [
+                _scheduled("g-mon", first_game),
+                _scheduled("g-next", second_game),
+                _scheduled("g-future", future),
+                _scheduled("g-missing", later.isoformat()),
+            ],
+            "boxes": {
+                "g-mon": {"body": _box("g-mon", "T1", "A", 24), "url": "archive://g-mon", "fetched_at": "2099-11-02T00:00:00Z"},
+                "g-next": {"body": _box("g-next", "T1", "A", 30), "url": "archive://g-next", "fetched_at": "2099-11-09T00:00:00Z"},
+                "g-missing": {"body": None, "error": "HTTP 500", "url": "archive://g-missing"},
+            },
+        }
+        first = run_daily(
+            cfg,
+            conn,
+            as_of=first_game,
+            season="2099-00",
+            bundle=bundle,
+            injury_rows=[{"player_id": "A", "status": "questionable", "source_url": "https://www.nba.com/injury"}],
+        )
+        assert first["status"] == "success", first
+        assert first["new_game_ids"] == ["g-mon"]
+        assert first["infer_status"] == "ok"
+        assert first["weekly_rows"]
+        assert first["zero_filled"] is False
+        for row in first["weekly_rows"]:
+            assert set(WEEKLY_FIELDS).issubset(row)
+            assert row["delta_pp_vs_last_week"] is None
+        daily_payload = json.loads((tmp_path / "data/reports/daily/2099-00" / f"{first_game}.json").read_text(encoding="utf-8"))
+        assert daily_payload["curve"]
+        assert set(WEEKLY_FIELDS).issubset(daily_payload["curve"][0])
+        assert conn.execute("SELECT COUNT(*) AS n FROM game_logs WHERE game_id = 'g-future'").fetchone()["n"] == 0
+        assert conn.execute("SELECT COUNT(*) AS n FROM game_logs WHERE game_id = 'g-next'").fetchone()["n"] == 0
+        logs_before = (tmp_path / "data/reports/daily/run_log.jsonl").read_text(encoding="utf-8").strip().splitlines()
+        games_before = conn.execute("SELECT COUNT(*) AS n FROM game_logs WHERE season = '2099-00'").fetchone()["n"]
+        again = run_daily(cfg, conn, as_of=first_game, season="2099-00", bundle=bundle)
+        assert again["status"] == "already_done"
+        assert conn.execute("SELECT COUNT(*) AS n FROM game_logs WHERE season = '2099-00'").fetchone()["n"] == games_before
+        logs_after = (tmp_path / "data/reports/daily/run_log.jsonl").read_text(encoding="utf-8").strip().splitlines()
+        assert logs_after == logs_before
+        assert conn.execute("SELECT COUNT(*) AS n FROM market_quotes").fetchone()["n"] == 0
+        assert conn.execute("SELECT COUNT(*) AS n FROM hourly_snapshots").fetchone()["n"] == 0
+        second_run = run_daily(cfg, conn, as_of=second_game, season="2099-00", bundle=bundle)
+        assert second_run["status"] == "success"
+        assert second_run["new_game_ids"] == ["g-next"]
+        deltas = [row["delta_pp_vs_last_week"] for row in second_run["weekly_rows"] if row["player_id"] == "A"]
+        assert deltas and deltas[0] is not None
+        award = conn.execute(
+            "SELECT p_award, p_eligibility FROM predictions WHERE season = '2099-00' AND player_id = 'A' AND snapshot_key = 'end'"
+        ).fetchone()
+        assert award["p_award"] is not None
+        assert award["p_eligibility"] is None
+        injury = conn.execute("SELECT status FROM injury_reports WHERE player_id = 'B'").fetchone()
+        assert injury is None
+        missing = run_daily(cfg, conn, as_of=later.isoformat(), season="2099-00", bundle=bundle)
+        assert missing["status"] == "success"
+        assert missing["data_status"] == "partial"
+        assert conn.execute("SELECT COUNT(*) AS n FROM game_logs WHERE game_id = 'g-missing'").fetchone()["n"] == 0
+        team_rows = conn.execute("SELECT win, points_for FROM team_results WHERE game_id = 'g-missing'").fetchall()
+        assert len(team_rows) == 2
+        assert all(row["win"] is not None and row["points_for"] != 0 for row in team_rows)
+        kept = conn.execute("SELECT COUNT(*) AS n FROM game_logs WHERE season = '2099-00'").fetchone()["n"]
+        stale = run_daily(
+            cfg,
+            conn,
+            as_of=(later + timedelta(days=1)).isoformat(),
+            season="2099-00",
+            source="live",
+            live_fetch=lambda _season: {"status": "待采集", "error": "HTTP 403", "schedule": None, "boxes": {}},
+        )
+        assert stale["data_status"] == "STALE"
+        assert stale["collection_status"] == "待采集"
+        assert conn.execute("SELECT COUNT(*) AS n FROM game_logs WHERE season = '2099-00'").fetchone()["n"] == kept
+        board = (tmp_path / "data/reports/stage3_board.html").read_text(encoding="utf-8")
+        assert "待采集" in board
+        assert "STALE" in board
+        assert "Alpha Player" in board
+        stale_again = run_daily(
+            cfg,
+            conn,
+            as_of=(later + timedelta(days=1)).isoformat(),
+            season="2099-00",
+            source="live",
+            live_fetch=lambda _season: {"status": "待采集", "error": "HTTP 403", "schedule": None, "boxes": {}},
+        )
+        assert stale_again["status"] == "already_done"
+        assert conn.execute("SELECT COUNT(*) AS n FROM game_logs WHERE season = '2099-00'").fetchone()["n"] == kept
+    finally:
+        conn.close()
+
+
 def main() -> int:
     import tempfile
 
@@ -1002,6 +1174,7 @@ def main() -> int:
         test_stage1_archive_replay,
         test_walk_forward_reproducible_and_not_worse,
         test_stage2_archive_backtest,
+        test_stage3_daily_incremental,
         test_vote_and_gamelog_parsers,
         test_quote_book_and_future_backfill,
         test_delta_alerts_and_normalization,
@@ -1025,6 +1198,7 @@ def main() -> int:
                 test_upsert_does_not_replace_with_null,
                 test_stage1_archive_replay,
                 test_stage2_archive_backtest,
+                test_stage3_daily_incremental,
             }:
                 with tempfile.TemporaryDirectory() as folder:
                     test(Path(folder))

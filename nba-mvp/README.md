@@ -49,6 +49,26 @@ PYTHONPATH=src python3 -m nba_mvp selftest
 
 2016—17 不进入 A/B 的配对均值：2015—16 没有更早赛季，赛前特征全空，基线 A 无法拟合。从 2017—18 起的配对折上，基线 B 的平均 log loss 和 Brier 都不高于基线 A。`tg_10` 和 `tg_40` 的 Brier 略高，写在报告的 `snapshot_shortfalls` 里，没有为了抹平这个差距去调 `C`。Top-1 / Top-3 只作辅助。可靠性图的正样本就是这些留出快照，样本很小。
 
+## Stage 3：每日增量
+
+`stage3-daily` 只吃 `as_of` 当天及之前已经结束的比赛。同一天再跑一次不会重复写入比赛、周快照或日志。抓取失败时保留已有行，日志和页面标 `STALE`，页面继续显示上一份周快照，缺比赛写「待采集」，不会把球员数据填成 0。未证实伤病不入库，也不把获奖概率置 0。Polymarket 不在这条路径上。
+
+2026—27 赛程在 `data.nba.com` 上目前是 HTTP 403。非存档日更会再请求一次官方伤病 PDF / 伤病页；拿不到就记「待采集」，拿到文件但没有已验证的解析器就记「未解析」，两种情况都不写入球员状态、不把概率置 0。已存档的赛季可以用 `--source archive` 按天重放，这条命令不访问伤病站。
+
+```bash
+PYTHONPATH=src python3 -m nba_mvp stage3-daily
+PYTHONPATH=src python3 -m nba_mvp stage3-daily --source archive --season 2024-25 --as-of 2024-10-24
+```
+
+日志和输出：
+
+- `data/reports/daily/run_log.jsonl`：每次日更一条，同一状态不重复追加
+- `data/reports/daily/<season>/<as_of>.json`：当天新比赛、缺失场次、推断状态。推断成功时 `curve` 带上当天概率行，用来保留每日曲线
+- `data/reports/weekly/<season>/<as_of>.json` 和同名 CSV：球员、概率、相对上周 Δpp、资格概率、预计胜场区间、`as_of`、`model_version`、理由
+- `data/reports/stage3_latest.json` 和 `data/reports/stage3_board.html`：最近一次日更。抓取失败时页面标 `STALE` 并留下上一份周快照；没有可展示的概率时写「待采集」
+
+周快照只在基线 B 已过门禁并且当天推断成功时写出。预计胜场是收缩后胜率的简单区间，不是蒙特卡洛。
+
 ## 市场
 
 `data/registry/market_registry.json` 一开始是空的。程序只会把 Gamma 搜索结果放进待审核队列。总决赛 MVP、错误赛季、未人工确认的市场不会进入对照。审核通过后手工写入注册表，每名球员只保留一个主市场。

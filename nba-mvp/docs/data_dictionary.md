@@ -66,6 +66,18 @@ PRD 的核心字段和当前落点：
 
 Polymarket 价格不是特征。`use_in_training` 为 true 时训练直接拒绝。
 
+## Stage 3 日更
+
+`stage3-daily` 的作业键是 `daily:{season}:{as_of}`。成功之后同一天再跑直接返回，不追加比赛行、周快照或日志。
+
+只写入 `game_date <= as_of` 且赛程或箱分已结束的新比赛。箱分失败时保留赛程里的球队比分，不写球员行，当天 `data_status` 为 `partial`。整份赛程拿不到时不删除已有比赛，`data_status` 为 `STALE`，采集状态为「待采集」，页面继续显示该赛季最近一份周快照。
+
+伤病只接受带来源且状态属于 `out` / `doubtful` / `questionable` / `probable` / `available` 的官方记录。传闻被拒绝。官方伤病会改 `injury_status`，不会把 `p_award` 置 0。当天没有新的官方记录时，沿用该日之前最近一次已入库的官方状态。非存档日更会检查官方伤病地址：失败记「待采集」，文件未解析记「未解析」，都不新增伤病行。2026—27 资格规则仍是 `unverified`，`p_eligibility` 保持空。
+
+推断成功的每一天把概率行写进当天 JSON 的 `curve`。周快照表仍只在周一或该赛季第一份快照时追加。
+
+周快照字段：`player_id`、`player_name`、`p_award`、`delta_pp_vs_last_week`、`p_eligibility`、`projected_wins_low`、`projected_wins_high`、`as_of`、`model_version`、`reasons`。没有上周概率时 Δpp 为空，不写成 0。没有胜场或剩余赛程时预计胜场区间为空。
+
 ## 市场与每小时对照
 
 `market_registry` 只来自人工审核过的 JSON。队列状态 `unmapped` 或 `rejected` 不参与对照。

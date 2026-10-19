@@ -151,6 +151,10 @@ def main(argv: list[str] | None = None) -> int:
     replay = sub.add_parser("stage1-replay")
     replay.add_argument("--season", action="append")
     sub.add_parser("stage2-backtest")
+    daily = sub.add_parser("stage3-daily")
+    daily.add_argument("--as-of", default=None)
+    daily.add_argument("--season", default=None)
+    daily.add_argument("--source", choices=("auto", "archive", "live"), default="auto")
 
     args = parser.parse_args(argv)
     if args.cmd == "selftest":
@@ -225,5 +229,40 @@ def main(argv: list[str] | None = None) -> int:
             }
         )
         return 0 if result["leakage_ok"] and result["walk_forward_reproducible"] and not any(result["fabricated_player_rows"].values()) else 1
+    if args.cmd == "stage3-daily":
+        from datetime import datetime, timezone
+
+        from nba_mvp.stage3 import run_daily
+
+        as_of = args.as_of or datetime.now(timezone.utc).date().isoformat()
+        conn = _connection(cfg)
+        try:
+            result = run_daily(
+                cfg,
+                conn,
+                as_of=as_of,
+                season=args.season,
+                source=args.source,
+                probe_injuries=args.source != "archive",
+            )
+        finally:
+            conn.close()
+        print(
+            {
+                "status": result.get("status"),
+                "season": result.get("season"),
+                "as_of": result.get("as_of"),
+                "data_status": result.get("data_status"),
+                "collection_status": result.get("collection_status"),
+                "new_games": len(result.get("new_game_ids") or []),
+                "missing_games": len(result.get("missing_games") or []),
+                "infer_status": result.get("infer_status"),
+                "model_version": result.get("model_version"),
+                "injury_source_status": result.get("injury_source_status"),
+                "log": result.get("log_path"),
+                "error": result.get("error"),
+            }
+        )
+        return 0 if result.get("status") in {"success", "already_done"} else 1
     parser.error(f"未知命令: {args.cmd}")
     return 2
