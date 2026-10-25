@@ -1,0 +1,11 @@
+{
+  "as_of_hour": "2026-10-25T16:00:00Z",
+  "model_version": "untrained",
+  "model_as_of": null,
+  "comparison_as_of": "2026-10-25T16:12:47Z",
+  "coverage": null,
+  "coverage_status": "pending_training",
+  "data_status": "STALE",
+  "rows": [],
+  "market_as_of": null
+}
