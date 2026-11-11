@@ -1,8 +1,8 @@
 {
-  "as_of_hour": "2026-11-11T02:00:00Z",
+  "as_of_hour": "2026-11-11T10:00:00Z",
   "model_version": "untrained",
   "model_as_of": null,
-  "comparison_as_of": "2026-11-11T02:49:36Z",
+  "comparison_as_of": "2026-11-11T10:51:38Z",
   "coverage": null,
   "coverage_status": "pending_training",
   "data_status": "STALE",
