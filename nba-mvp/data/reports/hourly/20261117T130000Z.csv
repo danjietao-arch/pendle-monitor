@@ -1,0 +1,1 @@
+as_of_hour,model_version,player_id,player_name,team_abbr,market_id,model_as_of,market_as_of,comparison_as_of,p_model,p_market_mid,p_market_normalized,bid,ask,spread_pp,last_trade,gamma_price,delta_pp,delta_rel,vs_bid_pp,vs_ask_pp,delta_vs_prev_hour_pp,p_eligibility,coverage,coverage_status,row_status,reason,condition_met,streak_start,streak_length
